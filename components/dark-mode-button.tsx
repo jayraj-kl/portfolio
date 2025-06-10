@@ -83,9 +83,9 @@ export function ModeToggle() {
     <div className="flex items-center justify-center">
       {" "}
       <Button
-        variant="outline"
+        // variant="outline"
         size="sm"
-        className="h-9 w-9 p-0 rounded-full bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700"
+        className="h-9 w-9 p-0 rounded-full bg-transparent hover:bg-transparent border-gray-300 dark:border-gray-700"
         onClick={() => {
           console.log("Current theme:", theme);
           const newTheme = theme === "dark" ? "light" : "dark";

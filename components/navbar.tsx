@@ -12,7 +12,7 @@ import {
 import { ModeToggle } from "./dark-mode-button";
 import { useState } from "react";
 
-export function NavbarDemo() {
+export function NavBar() {
   const navItems = [
     {
       name: "Projects",
