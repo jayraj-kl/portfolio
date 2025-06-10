@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTheme } from "next-themes";
 import { motion as m } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { Moon, Sun } from "lucide-react";
 
 export function ModeToggle() {
   const { setTheme, theme } = useTheme();
@@ -166,9 +167,36 @@ export function ModeToggle() {
 }
 
 export function ModeToggleMobile() {
+  const { setTheme, theme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  // useEffect only runs on the client, so now we can safely show the UI
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <>
-      <></>
-    </>
+    <button
+      onClick={() => {
+        const newTheme = theme === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+      }}
+      className="relative text-muted flex items-center gap-2 py-2"
+    >
+      {theme === "dark" ? (
+        <>
+          <Sun className="h-5 w-5" />
+          <span className="text-muted">Light</span>
+        </>
+      ) : (
+        <>
+          <Moon className="h-5 w-5" />
+          <span className="text-muted">Dark</span>
+        </>
+      )}
+    </button>
   );
 }

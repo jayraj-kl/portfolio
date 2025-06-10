@@ -9,11 +9,11 @@ export function ContactSection() {
         <TextAnimate
           animation="slideLeft"
           by="character"
-          className="text-balance text-xl font-semibold leading-none tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl mb-4 sm:mb-6"
+          className="text-heading text-balance text-xl font-bold leading-none tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl mb-2 sm:mb-3"
         >
           Contact
         </TextAnimate>
-        <ContactCard contact={DATA.contact} address="Mumbai, India" />
+        <ContactCard contact={DATA.contact} address="Gurugram, India" />
       </section>
     </>
   );

@@ -9,7 +9,7 @@ export function AuroraBackground() {
         <Aurora
           colorStops={["#928DAB", "#007485", "#D5CABD"]}
           blend={0.5}
-          amplitude={1.0}
+          amplitude={0.5}
           speed={1}
         />
       </div>
@@ -27,7 +27,7 @@ export function MagnetLinesBackground() {
               rows={9}
               columns={9}
               containerSize="45vmin"
-              lineColor="tomato"
+              lineColor="#928DAB"
               lineWidth="0.8vmin"
               lineHeight="5vmin"
               baseAngle={0}

@@ -27,7 +27,7 @@ export const EducationCard = ({
 }: EducationCardProps) => {
   return (
     <Card className="hover:shadow-lg transition-all duration-300 border-0">
-      <CardContent className="p-1 md:p-3">
+      <CardContent className="p-1 md:p-2">
         <div className="flex items-start gap-2 md:gap-3">
           <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
             <Image
@@ -47,32 +47,26 @@ export const EducationCard = ({
                   rel="noopener noreferrer"
                   className="group"
                 >
-                  <h3 className="font-semibold text-xs md:text-sm text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1">
+                  <h3 className="text-heading text-xs md:text-sm group-hover:text-primary transition-colors flex items-center gap-1">
                     {title}
                     <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </h3>
                 </Link>
               ) : (
-                <h3 className="font-semibold text-xs md:text-sm text-gray-900 dark:text-gray-100">
-                  {title}
-                </h3>
+                <h3 className="text-heading text-xs md:text-sm">{title}</h3>
               )}
               <Badge
                 variant="secondary"
-                className="text-gray-700 dark:text-gray-300 text-xs px-2 py-0.5 self-start"
+                className="text-muted text-xs px-2 py-0.5 self-start"
               >
                 {period}
               </Badge>
             </div>{" "}
             {subtitle && (
-              <p className="text-gray-700 dark:text-gray-300 font-medium mb-1 text-xs">
-                {subtitle}
-              </p>
+              <p className="text-body font-medium mb-1 text-xs">{subtitle}</p>
             )}
             {description && (
-              <p className="text-gray-600 dark:text-gray-400 text-xs mb-1">
-                {description}
-              </p>
+              <p className="text-muted text-xs mb-1">{description}</p>
             )}
             {badges && badges.length > 0 && (
               <div className="flex flex-wrap gap-1">
@@ -80,7 +74,7 @@ export const EducationCard = ({
                   <Badge
                     key={index}
                     variant="outline"
-                    className="text-xs border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                    className="text-2xs text-muted"
                   >
                     {badge}
                   </Badge>

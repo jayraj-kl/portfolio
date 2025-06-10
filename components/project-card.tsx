@@ -70,15 +70,15 @@ export function ProjectCard({
       </Link>
       <CardHeader className="px-2">
         <div className="space-y-1">
-          <CardTitle className="mt-1 text-base">{title}</CardTitle>
-          <div className="hidden font-sans text-xs underline print:visible">
+          <CardTitle className="text-heading text-base mt-1">{title}</CardTitle>
+          <div className="text-muted text-xs underline print:visible hidden">
             {link?.replace("https://", "").replace("www.", "").replace("/", "")}
           </div>
           <Markdown
             components={{
               p: ({ ...props }) => (
                 <p
-                  className="prose max-w-full text-pretty font-sans text-xs text-muted-foreground dark:prose-invert"
+                  className="prose max-w-full text-pretty text-xs text-muted dark:prose-invert"
                   {...props}
                 />
               ),
@@ -93,7 +93,7 @@ export function ProjectCard({
           <div className="mt-2 flex flex-wrap gap-1">
             {tags?.map((tag) => (
               <Badge
-                className="px-1 py-0 text-[10px]"
+                className="px-1 py-0 text-2xs"
                 variant="secondary"
                 key={tag}
               >
@@ -108,7 +108,7 @@ export function ProjectCard({
           <div className="flex flex-row flex-wrap items-start gap-1">
             {links?.map((link, idx) => (
               <Link href={link?.href} key={idx} target="_blank">
-                <Badge key={idx} className="flex gap-2 px-2 py-1 text-[10px]">
+                <Badge key={idx} className="flex gap-2 px-2 py-1 text-2xs">
                   {link.icon}
                   {link.type}
                 </Badge>
