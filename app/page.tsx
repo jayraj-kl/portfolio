@@ -17,15 +17,13 @@ export default function Home() {
         <div className="px-10 sm:px-15 md:px-20 lg:px-24 xl:px-32 2xl:px-42 py-8">
           <NavBar />
         </div>
-      </div>
-
-      {/* Aurora background section - till Experience section */}
-      <div className="relative w-full top-0">
-        <div className="absolute inset-0 z-0 hidden dark:block">
+      </div>      {/* Aurora background section - till Experience section */}
+      <div className="relative w-full min-h-screen">
+        <div className="absolute inset-0 z-0">
           <AuroraBackground />
         </div>
         <div className="relative z-10">
-          <div className="px-10 sm:px-15 md:px-20 lg:px-24 xl:px-32 2xl:px-42 pt-20">
+          <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pt-20">
             <div className="mt-16" />
             <AboutSection />
             <ExperienceSection />
