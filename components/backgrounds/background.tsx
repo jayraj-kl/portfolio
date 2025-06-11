@@ -43,7 +43,7 @@ export function ParticlesBackground() {
     <>
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Particles
-          particleColors={["#4a88e8", "#9d72e8", "#d667e3"]}
+          particleColors={["#928DAB", "#007485", "#D5CABD"]}
           particleCount={700}
           particleSpread={10}
           speed={0.05}
