@@ -22,7 +22,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Jayraj K. Ladkat - Developer Portfolio",
+  title: "Jayraj Ladkat - Developer Portfolio",
   keywords: [
     "Jayraj Ladkat",
     "Jayraj K. Ladkat",

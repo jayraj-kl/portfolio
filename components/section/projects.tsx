@@ -8,22 +8,22 @@ const BLUR_FADE_DELAY = 0.04;
 export function ProjectsSection() {
   return (
     <>
-      <section className="py-4 sm:py-6 md:py-8">
+      <section id="projects" className="py-4 sm:py-6 md:py-8">
+        {" "}
         <TextAnimate
           animation="slideLeft"
           by="character"
-          className="text-heading text-balance text-xl font-bold leading-none tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl mb-4 sm:mb-6"
+          className="text-heading text-balance text-xl font-bold leading-none tracking-tighter sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4"
         >
           Projects
-        </TextAnimate>
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-2xl">
+        </TextAnimate>{" "}
+        <h2 className="text-xl font-bold tracking-tighter sm:text-lg">
           Check out my latest work
         </h2>
-        <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed py-3">
+        <p className="text-muted-foreground md:text-base/relaxed lg:text-sm/relaxed xl:text-base/relaxed py-3">
           I&apos;ve worked on a variety of projects, from simple websites to
           complex web applications. Here are a few of my favorites.
         </p>
-
         <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {DATA.projects.map((project, id) => (
             <BlurFade

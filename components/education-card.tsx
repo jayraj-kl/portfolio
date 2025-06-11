@@ -47,6 +47,7 @@ export const EducationCard = ({
                   rel="noopener noreferrer"
                   className="group"
                 >
+                  {" "}
                   <h3 className="text-heading text-xs md:text-sm group-hover:text-primary transition-colors flex items-center gap-1">
                     {title}
                     <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -54,7 +55,7 @@ export const EducationCard = ({
                 </Link>
               ) : (
                 <h3 className="text-heading text-xs md:text-sm">{title}</h3>
-              )}
+              )}{" "}
               <Badge
                 variant="secondary"
                 className="text-muted text-xs px-2 py-0.5 self-start"
@@ -74,7 +75,7 @@ export const EducationCard = ({
                   <Badge
                     key={index}
                     variant="outline"
-                    className="text-2xs text-muted"
+                    className="text-xs text-muted"
                   >
                     {badge}
                   </Badge>

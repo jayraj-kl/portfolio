@@ -4,14 +4,14 @@ import { HomeIcon, NotebookIcon } from "lucide-react";
 export const DATA = {
   name: "Jayraj K. Ladkat",
   initials: "JL",
-  url: "https://dillion.io",
-  location: "San Francisco, CA",
+  url: "https://jayrajkl.com/",
+  location: "Pune, Maharashtra, India",
   locationLink: "https://www.google.com/maps/place/sanfrancisco",
   description:
-    "Software Engineer turned Entrepreneur. I love building things and helping people. Very active on Twitter.",
+    "A curious mind who loves bringing ideas to life through code! I'm a full-stack enthusiast who enjoys crafting seamless digital experiences and diving into the exciting world of AI applications.",
   summary:
-    "At the end of 2022, I quit my job as a software engineer to go fulltime into building and scaling my own SaaS businesses. In the past, [I pursued a double degree in computer science and business](/#education), [interned at big tech companies in Silicon Valley](https://www.youtube.com/watch?v=d-LJ2e5qKdE), and [competed in over 21 hackathons for fun](/#hackathons). I also had the pleasure of being a part of the first ever in-person cohort of buildspace called [buildspace sf1](https://buildspace.so/sf1).",
-  avatarUrl: "/me.png",
+    "I thrive on building things that make a real difference. My journey as a full-stack developer has allowed me to contribute to impactful projects, including my valuable internship at the Centre for Development of Advanced Computing (C-DAC). There, I helped **supercharge application performance** and **streamline data flow**, ensuring a smoother experience for thousands of users and contributing to significant system throughput increases. It's all about creating solutions that truly resonate.",
+  avatarUrl: "/me.jpg",
   skills: [
     "React",
     "Next.js",
@@ -41,7 +41,7 @@ export const DATA = {
       },
       X: {
         name: "X",
-        url: "https://dub.sh/dillion-twitter",
+        url: "https://x.com/jayraj7ladkat?s=21",
         icon: "x",
       },
     },

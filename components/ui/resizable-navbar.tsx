@@ -90,7 +90,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         boxShadow: visible
           ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
           : "none",
-        width: visible ? "30%" : "50%",
+        width: visible ? "40%" : "50%",
         y: visible ? 20 : 0,
       }}
       transition={{
@@ -99,7 +99,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         damping: 50,
       }}
       style={{
-        minWidth: "300px",
+        minWidth: "350px",
       }}
       className={cn(
         "relative z-[60] mx-auto hidden w-full max-w-4xl flex-row items-center justify-between self-start rounded-full bg-transparent px-3 py-2 lg:flex dark:bg-transparent",
@@ -232,15 +232,24 @@ export const NavbarLogo = () => {
   return (
     <a
       href="#"
-      className="relative z-20 mr-2 flex items-center space-x-2 px-1 py-1 text-sm font-normal text-foreground"
+      className="relative z-20 mr-2 flex items-center space-x-2 px-1 py-1 text-sm font-normal text-foreground flex-shrink-0"
     >
       <img
-        className="rounded-sm"
+        className="rounded-sm flex-shrink-0 dark:hidden"
         src={"/logo.jpg"}
         alt="logo"
         width={30}
         height={30}
-      />{" "}
+        style={{ minWidth: "30px", minHeight: "30px" }}
+      />
+      <img
+        className="rounded-sm flex-shrink-0 hidden dark:block"
+        src={"/logo2.jpg"}
+        alt="logo"
+        width={30}
+        height={30}
+        style={{ minWidth: "30px", minHeight: "30px" }}
+      />
       {/* <span className="font-medium text-foreground">Jayraj Ladkat</span> */}
     </a>
   );

@@ -15,7 +15,7 @@ export function EducationSection() {
           <TextAnimate
             animation="slideLeft"
             by="character"
-            className="text-heading text-balance text-xl font-bold leading-none tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl mb-4 sm:mb-6"
+            className="text-heading text-balance text-xl font-bold leading-none tracking-tighter sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4"
           >
             Education
           </TextAnimate>
@@ -38,7 +38,7 @@ export function EducationSection() {
                 </BlurFade>
               ))}{" "}
             </div>
-            <div className="lg:col-span-5 h-full flex items-stretch mt-4 sm:mt-6 lg:mt-0">
+            <div className="hidden lg:flex lg:col-span-5 h-full items-stretch">
               <div className="w-full">
                 <MagnetLinesBackground />
               </div>

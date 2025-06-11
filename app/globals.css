@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -130,7 +135,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans text-base;
   }
 }
 
@@ -152,12 +157,54 @@
     @apply text-primary;
   }
 
-  /* Consistent font sizes */
+  /* Consistent font sizes - Optimized for readability */
   .text-2xs {
-    @apply text-[10px];
+    @apply text-[12px];
   }
 
   .text-xs-plus {
+    @apply text-[13px];
+  }
+
+  /* Additional smaller text classes */
+  .text-3xs {
     @apply text-[11px];
+  }
+
+  /* Override default Tailwind text sizes to be more readable */
+  .text-xs {
+    @apply text-[14px];
+  }
+
+  .text-sm {
+    @apply text-[16px];
+  }
+
+  .text-base {
+    @apply text-[18px];
+  }
+
+  .text-lg {
+    @apply text-[21px];
+  }
+
+  .text-xl {
+    @apply text-[25px];
+  }
+
+  .text-2xl {
+    @apply text-[30px];
+  }
+
+  .text-3xl {
+    @apply text-[36px];
+  }
+
+  .text-4xl {
+    @apply text-[42px];
+  }
+
+  .text-5xl {
+    @apply text-[56px];
   }
 }

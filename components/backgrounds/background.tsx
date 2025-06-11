@@ -1,19 +1,17 @@
 import Aurora from "./Aurora";
 import MagnetLines from "./Magnet";
+import Particles from "./Particles";
 
 export function AuroraBackground() {
   return (
-    <>
-      {/* Aurora Background - positioned behind everything */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <Aurora
-          colorStops={["#928DAB", "#007485", "#D5CABD"]}
-          blend={0.5}
-          amplitude={0.5}
-          speed={1}
-        />
-      </div>
-    </>
+    <div className="w-full h-full">
+      <Aurora
+        colorStops={["#928DAB", "#007485", "#D5CABD"]}
+        blend={0.5}
+        amplitude={0.5}
+        speed={1}
+      />
+    </div>
   );
 }
 
@@ -28,13 +26,33 @@ export function MagnetLinesBackground() {
               columns={9}
               containerSize="45vmin"
               lineColor="#928DAB"
-              lineWidth="0.8vmin"
+              lineWidth="0.4vmin"
               lineHeight="5vmin"
               baseAngle={0}
               style={{ margin: "0" }}
             />
           </div>
         </div>
+      </div>
+    </>
+  );
+}
+
+export function ParticlesBackground() {
+  return (
+    <>
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <Particles
+          particleColors={["#4a88e8", "#9d72e8", "#d667e3"]}
+          particleCount={700}
+          particleSpread={10}
+          speed={0.05}
+          particleBaseSize={200}
+          moveParticlesOnHover={true}
+          alphaParticles={false}
+          sizeRandomness={0.5}
+          disableRotation={false}
+        />
       </div>
     </>
   );
