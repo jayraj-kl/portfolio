@@ -1,0 +1,280 @@
+.study-map {
+  --status-done: oklch(0.58 0.12 165);
+  --status-doing: oklch(0.66 0.15 65);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.dark .study-map {
+  --status-done: oklch(0.78 0.13 165);
+  --status-doing: oklch(0.82 0.14 80);
+}
+
+/* Press feedback for anything clickable. */
+.study-map .sm-press {
+  transition:
+    transform 140ms var(--ease-out),
+    scale 180ms var(--ease-out),
+    opacity 180ms ease,
+    background-color 150ms ease,
+    color 150ms ease,
+    box-shadow 200ms ease,
+    border-color 250ms ease;
+}
+
+.study-map .sm-press:active {
+  transform: scale(0.97);
+}
+
+.study-map button.sm-press:active {
+  transform: scale(0.92);
+}
+
+.study-map .sm-appear {
+  @starting-style {
+    opacity: 0;
+    scale: 0.85;
+  }
+}
+
+/* Topics glide to their new place when a branch opens or closes. */
+.study-map .react-flow__node {
+  transition: transform 320ms var(--ease-in-out);
+}
+
+.study-map .sm-edge {
+  transition:
+    d 320ms var(--ease-in-out),
+    stroke 250ms ease,
+    stroke-width 200ms ease,
+    filter 200ms ease;
+}
+
+.study-map .sm-edge[data-trail="true"] {
+  stroke-width: 2.25;
+  filter: drop-shadow(0 0 5px var(--tone));
+}
+
+.study-map .sm-edge[data-status="todo"] {
+  --tone: color-mix(in oklab, var(--foreground) 45%, transparent);
+}
+
+.study-map .sm-edge[data-status="todo"][data-trail="true"] {
+  stroke: color-mix(in oklab, var(--foreground) 75%, transparent);
+  stroke-width: 1.5;
+}
+
+.study-map [data-status="doing"] {
+  --tone: var(--status-doing);
+}
+
+.study-map [data-status="done"] {
+  --tone: var(--status-done);
+}
+
+/* New topics arrive with a short stagger. */
+@keyframes sm-enter {
+  from {
+    opacity: 0;
+    scale: 0.92;
+  }
+}
+
+@keyframes sm-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.study-map .sm-enter {
+  animation: sm-enter 280ms var(--ease-out) backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+.study-map .sm-edge-enter {
+  animation: sm-fade 360ms ease backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+/* Topic pill: a border highlight and inner glow that follow the pointer. */
+.study-map .sm-pill {
+  --tone: color-mix(in oklab, var(--foreground) 60%, transparent);
+  isolation: isolate;
+}
+
+.study-map .sm-pill[data-status="doing"] {
+  --tone: var(--status-doing);
+}
+
+.study-map .sm-pill[data-status="done"] {
+  --tone: var(--status-done);
+}
+
+.study-map .sm-pill::before,
+.study-map .sm-pill::after {
+  position: absolute;
+  border-radius: inherit;
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.study-map .sm-pill::before {
+  inset: -1px;
+  padding: 1px;
+  background: radial-gradient(
+    110px circle at var(--mx, 50%) var(--my, 50%),
+    var(--tone),
+    transparent 72%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.study-map .sm-pill::after {
+  z-index: -1;
+  inset: 0;
+  background: radial-gradient(
+    130px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in oklab, var(--tone) 16%, transparent),
+    transparent 70%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .study-map .sm-pill:hover::before,
+  .study-map .sm-pill:hover::after {
+    opacity: 1;
+  }
+}
+
+.study-map .sm-pill[data-selected="true"] {
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--tone) 14%, transparent);
+}
+
+.study-map .sm-pill[data-selected="true"]::before {
+  background: linear-gradient(
+    115deg,
+    var(--tone),
+    color-mix(in oklab, var(--tone) 30%, transparent) 50%,
+    var(--tone)
+  );
+  opacity: 1;
+}
+
+/* Centre topic. */
+.study-map .sm-halo {
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--status-done) 22%, transparent),
+    transparent 68%
+  );
+  transition: opacity 400ms ease;
+}
+
+.study-map .sm-progress {
+  transition: stroke-dasharray 500ms var(--ease-out);
+}
+
+/* Soft light that trails the pointer across the canvas. */
+.study-map .sm-spotlight {
+  display: none;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--status-done) 9%, transparent),
+    transparent 65%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .study-map .sm-spotlight {
+    display: block;
+  }
+}
+
+/* Status change. */
+@keyframes sm-pop {
+  from {
+    opacity: 0.4;
+    filter: blur(2px);
+    scale: 0.6;
+  }
+}
+
+@keyframes sm-burst {
+  from {
+    opacity: 0.55;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 2.8;
+  }
+}
+
+.study-map .sm-pop {
+  animation: sm-pop 220ms var(--ease-out);
+}
+
+.study-map .sm-burst {
+  background: radial-gradient(circle, transparent 35%, var(--status-done) 70%, transparent 72%);
+  animation: sm-burst 480ms var(--ease-out) forwards;
+}
+
+/* Details panel. */
+.study-map .sm-panel {
+  transition:
+    opacity 200ms ease,
+    translate 240ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+@media (min-width: 768px) {
+  .study-map .sm-panel {
+    @starting-style {
+      opacity: 0;
+      translate: 16px 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-map .react-flow__node {
+    transition: none;
+  }
+
+  .study-map .sm-edge {
+    transition-property: stroke, filter;
+  }
+
+  .study-map .sm-enter {
+    animation-name: sm-fade;
+  }
+
+  .study-map .sm-press:active,
+  .study-map button.sm-press:active {
+    transform: none;
+  }
+
+  .study-map .sm-pop,
+  .study-map .sm-burst {
+    animation: none;
+  }
+
+  .study-map .sm-burst {
+    display: none;
+  }
+
+  .study-map .sm-panel {
+    transition-property: opacity;
+    translate: none;
+  }
+}
