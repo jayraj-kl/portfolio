@@ -1,0 +1,185 @@
+%% ════════════════════════════════════════════════════════════════════════════
+%% Jayraj Kiran Ladkat — Software Development Engineer (SDE) Resume
+%% Style: Clean, strictly single-page, ATS-optimized, high-impact typography
+%% Compile: pdfLaTeX  ·  Overleaf: all packages preinstalled
+%% ════════════════════════════════════════════════════════════════════════════
+\documentclass[10pt,a4paper]{article}
+
+%% ── Encoding & Fonts ────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}                       % Latin Modern — clean default
+\usepackage{microtype}                     % subtle kerning improvements
+
+%% ── Page Geometry (Optimized for Strict 1-Page Layout) ────────────────────
+\usepackage[top=0.9cm, bottom=0.9cm, left=1.25cm, right=1.25cm]{geometry}
+\setlength{\parindent}{0pt}                % no paragraph indent
+\setlength{\parskip}{0pt}                  % no inter-paragraph gap
+\pagestyle{empty}                          % single-page resume: suppress page numbers
+
+%% ── Section Headers (Small Caps + Dark Teal Rule) ──────────────────────────
+\usepackage{titlesec}
+\setcounter{secnumdepth}{0}                % suppress section numbers
+
+\titleformat{\section}
+  {\large\scshape\color{heading}}          % small caps, coloured
+  {}                                        % no label
+  {0em}                                     % no indent
+  {}                                        % no prefix
+  [\color{heading}\titlerule]              % horizontal rule beneath text
+\titlespacing*{\section}{0pt}{0.75ex plus 0.1ex minus 0.1ex}{0.38ex plus 0.05ex}
+
+%% ── Colours ────────────────────────────────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{heading}{RGB}{0, 90, 110}     % dark teal (section headers)
+\definecolor{linkblue}{RGB}{10, 80, 160}   % subtle navy (URLs)
+
+%% ── Hyperlinks ─────────────────────────────────────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks  = true,
+  urlcolor    = linkblue,
+  linkcolor   = black,
+  citecolor   = black,
+  pdfauthor   = {Jayraj Kiran Ladkat},
+  pdftitle    = {Jayraj Kiran Ladkat - Software Development Engineer Resume},
+}
+
+%% ── Icons & Lists ──────────────────────────────────────────────────────────
+\usepackage{fontawesome5}                  % icons for contact info & external links
+\usepackage{enumitem}
+\setlist[itemize]{
+  nosep,
+  leftmargin=1.15em,
+  label=\textbullet,
+  topsep=0.08em,
+  itemsep=0.12em
+}
+
+%% ── Tables ─────────────────────────────────────────────────────────────────
+\usepackage{tabularx}
+
+% ════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── Header ──────────────────────────────────────────────────────────────────
+\begin{center}
+  \vspace*{-0.45em}
+  {\LARGE\bfseries Jayraj Kiran Ladkat}\\[0.28em]
+  {\footnotesize
+    \faIcon{envelope}\;\href{mailto:jayrajkladkat@gmail.com}{jayrajkladkat@gmail.com}%
+    \quad|\quad
+    \faIcon{phone}\;+91\,97170\,61462%
+    \quad|\quad
+    \faIcon{map-marker-alt}\;Gurugram\,/\,Pune, India%
+    \quad|\quad
+    \faIcon{globe}\;\href{https://jayrajkl.com}{jayrajkl.com}%
+    \quad|\quad
+    \faIcon{github}\;\href{https://github.com/jayraj-kl}{jayraj-kl}%
+    \quad|\quad
+    \faIcon{linkedin}\;\href{https://www.linkedin.com/in/jayraj-ladkat-25534626b}{jayraj-ladkat}%
+  }
+  \vspace*{-0.45em}
+\end{center}
+
+% ── Education ───────────────────────────────────────────────────────────────
+\section{Education}
+\noindent
+\begin{tabular*}{\textwidth}{@{}l@{\extracolsep{\fill}}r@{}}
+  \textbf{B.Tech.\ in Computer Science and Engineering} & 10/2022\,--\,10/2026 \\
+  MIT World Peace University, Pune, Maharashtra & 
+  % CGPA:\,\textbf{7.89\,/\,10.0} \\
+\end{tabular*}
+\vspace{0.04em}
+\noindent
+{\footnotesize\textbf{Relevant Coursework:} Data Structures \& Algorithms, Distributed Systems, DBMS, Operating Systems, Computer Networks, OOP}
+
+\vspace{-0.15em}
+
+% ── Technical Skills ────────────────────────────────────────────────────────
+\section{Technical Skills}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\small}p{3.4cm}@{\hspace{0.6em}}X@{}}
+  Languages: & Python, TypeScript, JavaScript, SQL, C/C++, Go (Basic) \\[0.12em]
+  Backend \& Systems: & Node.js, FastAPI, Flask, PostgreSQL, Apache Kafka, NATS, Redis, REST APIs, WebSockets \\[0.12em]
+  AI \& ML Systems: & Agentic RAG, LangGraph, LangChain, PyTorch, Mixed-Precision QAT, Pinecone \\[0.12em]
+  Cloud \& DevOps: & Docker, AWS (ECS, S3), CI/CD Automation, Daytona Sandboxes, Linux, Git, Nginx, Prisma \\
+\end{tabularx}
+
+\vspace{-0.15em}
+
+% ── Work Experience ────────────────────────────────────────────────────────
+\section{Experience}
+
+\textbf{TIGER-Lab, University of Waterloo} \hfill \textit{Waterloo, Canada (Remote)}\\
+\textit{Software Engineering Intern (Research)} \hfill 07/2026\,--\,Present
+\begin{itemize}
+  \item Engineered an automated multi-step generation pipeline (script $\to$ code $\to$ render $\to$ narration) for dynamic educational videos, reducing end-to-end animation synthesis latency by 45\%.
+  \item Architected an evolutionary prompt optimization engine to dynamically calibrate multi-agent LLM prompts, boosting pedagogical clarity and instructional alignment scores by 30\%.
+\end{itemize}
+
+\vspace{0.22em}
+
+\textbf{Publicis Sapient} \hfill \textit{Gurugram, Haryana, India}\\
+\textit{Software Engineering Intern} \hfill 08/2025\,--\,12/2025
+\begin{itemize}
+  \item Optimized an AI-agent synthetic data-generation pipeline, slashing token consumption by 35\% per run via prompt compression, structured caching, and schema enforcement.
+  \item Enhanced an AI talent evaluation platform with client-side request prefetching and asynchronous assessment workers, cutting recruiter review turnaround time by 40\%.
+\end{itemize}
+
+\vspace{0.22em}
+
+\textbf{Elixir AI} \hfill \textit{Pune, Maharashtra, India}\\
+\textit{Software Engineering Intern} \hfill 06/2025\,--\,08/2025
+\begin{itemize}
+  \item Developed full-stack features for the \textit{Climate Smart Public Health Platform} (Harvard University \& Malagasy Ministry of Health collaboration) using Flask, React, and PostgreSQL/PostGIS.
+  \item Optimized spatial PostGIS queries across large-scale geospatial raster/vector datasets and containerized services using Docker, ensuring reproducible deployments presented to international stakeholders.
+\end{itemize}
+
+\vspace{0.22em}
+
+\textbf{Centre for Development of Advanced Computing (C-DAC)} \hfill \textit{Pune, Maharashtra, India}\\
+\textit{Cloud \& Full-Stack Intern} \hfill 01/2025\,--\,02/2025
+\begin{itemize}
+  \item Integrated NATS pub/sub asynchronous messaging into microservice pipelines, eliminating synchronous HTTP blocking and decreasing peak-load request response times by 30\%.
+\end{itemize}
+
+\vspace{-0.15em}
+
+% ── Projects ────────────────────────────────────────────────────────────────
+\section{Selected Projects}
+
+\textbf{Dexterio\,---\,Autonomous Educational Animation Generation Engine} \hfill 2026\\
+\textit{Python, TypeScript, Apache Kafka, Docker, Daytona, LangGraph, PostgreSQL} \hfill \href{https://github.com/jayraj-kl/dexterio}{[\faIcon{github}\;Code]}
+\begin{itemize}
+  \item Engineered an Agentic RAG engine orchestrating multi-step storyboard planning and modular Manim animation code generation with PostgreSQL-backed LangGraph checkpointers for fault-tolerant thread resumption.
+  \item Architected a distributed asynchronous worker fleet using Apache Kafka and isolated Daytona/Docker VM sandboxes to securely compile, validate, and render untrusted generated Python code.
+\end{itemize}
+
+\vspace{0.22em}
+
+\textbf{One Stop Deployment\,---\,Automated Microservice CI/CD Platform} \hfill 2024\\
+\textit{TypeScript, Docker, AWS (ECS, S3), Apache Kafka, Reverse Proxy, Node.js} \hfill \href{https://github.com/jayraj-kl}{[\faIcon{github}\;Code]}
+\begin{itemize}
+  \item Developed a distributed one-click deployment engine automating build and containerization workflows for GitHub repositories using containerised Docker build workers and AWS ECS/S3.
+  \item Implemented real-time build and deployment log streaming via Apache Kafka and designed a dynamic reverse-proxy for wildcard subdomain routing to deliver instant application preview URLs.
+\end{itemize}
+
+\vspace{0.22em}
+
+\textbf{Demex\,---\,Distributed Full-Stack Search Engine} \hfill 2024\\
+\textit{TypeScript, Next.js, PostgreSQL, Node.js} \hfill \href{https://github.com/jayraj-kl/demex-engine}{[\faIcon{github}\;Code]}
+\begin{itemize}
+  \item Built a high-throughput, robots.txt-compliant web crawler in TypeScript that recursively indexes web graph topologies into PostgreSQL using optimized relational graph schemas.
+  \item Implemented a ranking pipeline combining TF-IDF lexical matching and PageRank link analysis; built a Next.js search UI supporting real-time query completion and sub-100ms result previews.
+\end{itemize}
+
+\vspace{-0.15em}
+
+% ── Publications ────────────────────────────────────────────────────────────
+\section{Selected Publications}
+\begin{itemize}[leftmargin=1.15em, itemsep=0.1em]
+  \item \textbf{Co-Adaptation over Allocation: KL-Guided Mixed-Precision Quantization-Aware Training} -- \textit{IEEE HiPC 2026} \hfill \href{https://drive.google.com/file/d/1wYned37BXW-kTc7B7jNQFcwUzh66sxkG/view?usp=sharing}{[\faIcon{external-link-alt}\;Accepted Poster]}
+  \item \textbf{Real-World Scalability of PostgreSQL: Practical Techniques Use Case Study} -- \textit{IEEE ICBDS 2025} \hfill \href{https://ieeexplore.ieee.org/document/11377486/}{[\faIcon{external-link-alt}\;IEEE Xplore 11377486]}
+\end{itemize}
+
+\end{document}

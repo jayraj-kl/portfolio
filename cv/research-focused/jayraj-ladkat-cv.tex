@@ -1,0 +1,256 @@
+%% ════════════════════════════════════════════════════════════════════════════
+%% Jayraj Kiran Ladkat — Research-Intern CV
+%% Style: Fan-Lei-inspired (article class, full-width, clean typography)
+%% Compile: pdfLaTeX  ·  Overleaf: all packages preinstalled
+%% ════════════════════════════════════════════════════════════════════════════
+\documentclass[11pt,a4paper]{article}
+
+%% ── Encoding & fonts ───────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}                       % Latin Modern — clean serif default
+
+%% ── Page geometry ──────────────────────────────────────────────────────────
+\usepackage[top=1.6cm, bottom=2.0cm, left=1.8cm, right=1.8cm]{geometry}
+
+%% ── Typography ─────────────────────────────────────────────────────────────
+\usepackage{microtype}                     % subtle kerning improvements
+\setlength{\parindent}{0pt}                % no paragraph indent
+\setlength{\parskip}{0pt}                  % no inter-paragraph gap
+
+%% ── Section headers (small caps + coloured rule) ───────────────────────────
+\usepackage{titlesec}
+\setcounter{secnumdepth}{0}                % suppress section numbers
+
+\titleformat{\section}
+  {\large\scshape\color{heading}}          % small caps, coloured
+  {}                                        % no label
+  {0em}                                     % no indent
+  {}                                        % no prefix
+  [\color{heading}\titlerule]              % horizontal rule beneath
+\titlespacing*{\section}{0pt}{1.3ex plus 0.4ex}{0.8ex plus 0.2ex}
+
+%% ── Colours ────────────────────────────────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{heading}{RGB}{0, 90, 110}     % dark teal (section headers)
+\definecolor{linkblue}{RGB}{10, 80, 160}   % subtle navy (URLs)
+
+%% ── Hyperlinks ─────────────────────────────────────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks  = true,
+  urlcolor    = linkblue,
+  linkcolor   = black,
+  citecolor   = black,
+  pdfauthor   = {Jayraj Kiran Ladkat},
+  pdftitle    = {Jayraj Kiran Ladkat - CV},
+}
+
+%% ── Icons & Graphics ───────────────────────────────────────────────────────
+\usepackage{fontawesome5}                  % \faIcon{...} for contact line
+\usepackage{graphicx}                      % for figures
+
+%% ── Footer ─────────────────────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\footnotesize\textsc{Last Updated\,:\,Sep.\,28,\,2026}}
+\fancyfoot[C]{\footnotesize\textsc{Jayraj Kiran Ladkat\,--\,CV}}
+\fancyfoot[R]{\footnotesize\thepage/\pageref{LastPage}}
+
+%% ── Lists ──────────────────────────────────────────────────────────────────
+\usepackage{enumitem}
+\setlist[itemize]{nosep, leftmargin=1.5em, label=\textbullet, topsep=0.25em}
+
+%% ── Tables ─────────────────────────────────────────────────────────────────
+\usepackage{tabularx}
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── Header ──────────────────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries Jayraj Kiran Ladkat}\\[0.5em]
+  {\small
+    \faIcon{envelope}\;\href{mailto:jayrajkladkat@gmail.com}{jayrajkladkat@gmail.com}%
+    \quad
+    \faIcon{phone}\;+91\,97170\,61462%
+    \quad
+    \faIcon{map-marker-alt}\;Gurugram, Haryana, India%
+    \quad
+    \faIcon{globe}\;\href{https://jayrajkl.com}{jayrajkl.com}%
+  }\\[0.25em]
+  {\small
+    \faIcon{github}\;\href{https://github.com/jayraj-kl}{jayraj-kl}%
+    \quad
+    \faIcon{linkedin}\;\href{https://www.linkedin.com/in/jayraj-ladkat-25534626b}{jayraj-ladkat}%
+  }
+\end{center}
+
+\vspace{0.2em}
+
+
+% ── Education ───────────────────────────────────────────────────────────────
+\section{Education}
+
+\noindent
+\begin{tabular*}{\textwidth}{@{}l@{\hspace{1.0em}}l@{\extracolsep{\fill}}r@{}}
+  10/2022\,--\,10/2026 & \textbf{B.Tech.\ in Computer Science and Engineering} & MIT World Peace University \\
+                       & CGPA\,:\,7.89\,/\,10 & Pune, Maharashtra, India \\
+\end{tabular*}
+
+
+% ── Research Interests ──────────────────────────────────────────────────────
+\section{Research Interests}
+
+AI for Education,\; LLM/VLM Evaluation,\; Evolutionary Prompt Optimisation,\; and ML Systems
+
+
+% ── Research Experience ─────────────────────────────────────────────────────
+\section{Research Experience}
+
+\textbf{Research Intern} \hfill 07/2026\,--\,Present\\
+TIGER-Lab, University of Waterloo \hfill \textit{Waterloo, Canada (Remote)}
+\begin{itemize}
+  \item Advisor: Max Ku.
+  \item Developing an automated multi-step generation pipeline for explanatory educational videos (script $\to$ code $\to$ render $\to$ narration).
+  \item Optimising system prompts using evolutionary prompt optimisation methods to dynamically encode user preferences and align pedagogical style (step-by-step intuition vs.\ mathematical depth). \textit{Work in progress.}
+\end{itemize}
+
+
+% ── Publications ────────────────────────────────────────────────────────────
+\section{Publications}
+
+\hangindent=1.6em\hangafter=1
+P2.\quad Shreya Mandekar, \textbf{Jayraj Kiran Ladkat}, Madhura Phatak,
+and Bhavana Tiple,
+``Co-Adaptation over Allocation: KL-Guided Mixed-Precision
+Quantization-Aware Training,''
+\textit{accepted poster},
+IEEE International Conference on High Performance Computing,
+Data, and Analytics (HiPC), 2026.
+\href{https://drive.google.com/file/d/1wYned37BXW-kTc7B7jNQFcwUzh66sxkG/view?usp=sharing}{[\faIcon{external-link-alt}\;Acceptance Proof]}
+
+\vspace{0.45em}
+
+\hangindent=1.6em\hangafter=1
+P1.\quad \textbf{Jayraj Kiran Ladkat} and Pranati Waghodekar,
+``Real-World Scalability of PostgreSQL: Practical Techniques
+Use Case Study,''
+in \textit{IEEE International Conference on Blockchain and
+Distributed Systems Security} (ICBDS 2025).
+\href{https://ieeexplore.ieee.org/document/11377486/}{[\faIcon{external-link-alt}\;IEEE~Xplore~11377486]}
+
+
+% ── Professional Experience ────────────────────────────────────────────────
+\section{Professional Experience}
+
+\textbf{Engineering Intern} \hfill 08/2025\,--\,12/2025\\
+Publicis Sapient \hfill \textit{Gurugram, Haryana}
+\begin{itemize}
+  \item Optimised an AI agent data-generation pipeline: reduced per-run
+        token usage, redesigned the help interface, and improved synthetic
+        dataset quality.
+  \item Extended an AI recruitment screening tool with request
+        prefetching, responsive multi-device frontend, and structured
+        assessment logic---cutting evaluation turnaround and manual HR
+        review effort.
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Software Engineering Intern} \hfill 06/2025\,--\,08/2025\\
+Elixir AI \hfill \textit{Pune, Maharashtra}
+\begin{itemize}
+  \item Built features for the \textit{Climate Smart Public Health
+        Platform}, a Harvard University--Malagasy Ministry of Public
+        Health collaboration.
+  \item Developed the full-stack geospatial application end-to-end:
+        Flask\,+\,PostgreSQL/PostGIS backend, React map/dashboard
+        frontend, Docker-based local dev.
+        Demonstrated the platform to Harvard and Ministry stakeholders.
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Cloud \& Full-Stack Intern} \hfill 01/2025\,--\,02/2025\\
+Centre for Development of Advanced Computing (C-DAC) \hfill \textit{Pune, Maharashtra}
+\begin{itemize}
+  \item Introduced NATS-based asynchronous messaging into the service
+        architecture, reducing request wait time under load.
+\end{itemize}
+
+
+% ── Clean page break so Selected Projects starts on Page 2 ─────────────────
+\newpage
+
+
+% ── Selected Projects ──────────────────────────────────────────────────────
+\section{Projects}
+
+\textbf{\href{https://github.com/jayraj-kl/dexterio}{Dexterio}%
+\,---\,Autonomous Educational Animation Generation Engine}
+\hfill 2026
+\begin{itemize}
+  \item Engineered an Agentic RAG pipeline orchestrating multi-step lesson storyboard planning and modular Manim animation code generation grounded in course materials.
+  \item Architected a distributed worker fleet using Apache Kafka, Daytona/Docker remote VM sandboxes for safe code compilation, and PostgreSQL-backed LangGraph checkpointers for stateful thread resumption.
+\end{itemize}
+
+\vspace{0.35em}
+
+\textbf{\href{https://github.com/jayraj-kl/stud-ex}{StudEx}%
+\,---\,RAG Tutors for Core CS Subjects}
+\hfill 2024\,--\,2025
+\begin{itemize}
+  \item Built an educational platform with subject-specific chatbots (Theory of Computation, ML, Blockchain, Cloud) grounded in course PDFs via OpenAI embeddings and Pinecone vector store (LangChain orchestration).
+  \item Designed a responsive Next.js/TypeScript dashboard with animated expandable cards (Framer Motion), Prisma ORM persistence, and transactional email via React Email.
+\end{itemize}
+
+\vspace{0.35em}
+
+\textbf{\href{https://github.com/jayraj-kl/website-builder}{Website Builder}%
+\,---\,In-Browser Full-Stack AI Development Platform}
+\hfill 2024
+\begin{itemize}
+  \item Developed an AI-powered browser-based platform converting natural language prompts into functional multi-file web applications using React, TypeScript, and the WebContainer API.
+  \item Implemented real-time dynamic code execution, a syntax-highlighted editor, virtual file explorer, and client-side instant preview rendering without remote server dependencies.
+\end{itemize}
+
+\vspace{0.35em}
+
+\textbf{\href{https://github.com/jayraj-kl/demex-engine}{Demex}%
+\,---\,Full-Stack Search Engine}
+\hfill 2024
+\begin{itemize}
+  \item Built a robots.txt-compliant web crawler in TypeScript that indexes content and stores web graph topologies in PostgreSQL.
+  \item Implemented ranking combining TF-IDF lexical scoring and PageRank; built a Next.js search UI with real-time query completion and rich result previews.
+\end{itemize}
+
+\vspace{0.35em}
+
+\textbf{\href{https://github.com/jayraj-kl}{One Stop Deployment}%
+\,---\,Automated Microservice CI/CD Platform}
+\hfill 2024
+\begin{itemize}
+  \item Developed a distributed one-click deployment engine for GitHub repositories using containerised Docker build workers and AWS ECS/S3.
+  \item Implemented real-time log streaming using Apache Kafka and a reverse-proxy system for dynamic subdomain routing, providing instant preview URLs.
+\end{itemize}
+
+
+% ── Technical Skills ────────────────────────────────────────────────────────
+\section{Technical Skills}
+
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\small}r@{\hspace{1.2em}}X@{}}
+  Languages:   & Python, TypeScript, JavaScript, SQL, C/C++ \\[0.3em]
+  ML\,/\,AI:   & LLM/VLM evaluation;\; Agentic RAG (OpenAI embeddings, Pinecone,
+                LangChain);\; evolutionary prompt optimisation;\;
+                mixed-precision QAT;\; PyTorch \\[0.3em]
+  Systems:     & PostgreSQL/PostGIS, Apache Kafka, NATS, Docker, AWS (ECS, S3),
+                WebContainers, Flask, Node.js, React, Next.js \\[0.3em]
+  Tools:       & Git, REST APIs, Prisma ORM, Drizzle ORM, LangGraph \\
+\end{tabularx}
+
+\end{document}
