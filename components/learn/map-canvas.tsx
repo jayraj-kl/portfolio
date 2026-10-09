@@ -7,6 +7,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  useViewport,
   type Edge,
   type EdgeProps,
   type Node,
@@ -14,58 +15,98 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
-import {
-  motion,
-  useMotionTemplate,
-  useMotionValue,
-  useSpring,
-} from "motion/react";
 import { useTheme } from "next-themes";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
-  useId,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
-  type PointerEvent,
 } from "react";
+import { CursorWave } from "@/components/learn/cursor-wave";
+import {
+  LinkPreview,
+  type PreviewAnchor,
+} from "@/components/learn/link-preview";
 import { StatusGlyph } from "@/components/learn/status-glyph";
-import { radialLayout, radialLinkPath } from "@/lib/learn/layout";
-import { indexChildren } from "@/lib/learn/tree";
-import type { Progress, Status, StudyMap } from "@/lib/learn/types";
+import { libraryLayout, radialLinkPath } from "@/lib/learn/layout";
+import type { ChildIndex } from "@/lib/learn/tree";
+import type { Progress, Status, StudyMap, Topic } from "@/lib/learn/types";
 import { cn } from "@/lib/utils";
 
+type Motion = {
+  // Bumped each time the node's map is opened, which replays the sweep.
+  sweep: number;
+  delay: number;
+  fromX: number;
+  fromY: number;
+};
+
 type TopicNodeData = {
+  mapId: string;
   title: string;
   depth: number;
   progress: Progress;
   childCount: number;
   collapsed: boolean;
-  enterDelay: number;
+  dimmed: boolean;
+  motion: Motion;
 };
 type TopicFlowNode = Node<TopicNodeData, "topic">;
-type RingsFlowNode = Node<{ ringStep: number; rings: number }, "rings">;
+type RingsFlowNode = Node<
+  { ringStep: number; rings: number; dimmed: boolean },
+  "rings"
+>;
+type LabelFlowNode = Node<
+  { mapId: string; title: string; progress: Progress; hidden: boolean },
+  "label"
+>;
 type RadialFlowEdge = Edge<
-  { path: string; status: Status; trail: boolean; enterDelay: number },
+  {
+    path: string;
+    offset: { x: number; y: number };
+    status: Status;
+    trail: boolean;
+    dimmed: boolean;
+    motion: Motion;
+  },
   "radial"
 >;
 
 type CanvasActions = {
   onToggle: (id: string) => void;
   onAdd: (parentId: string) => void;
+  onActivate: (mapId: string | null) => void;
 };
 const CanvasActionsContext = createContext<CanvasActions | null>(null);
 
-const SPOTLIGHT_SIZE = 520;
 const PHONE_ZOOM = 0.65;
+const MIN_ZOOM = 0.05;
+const MAX_ZOOM = 1.75;
+// A small map is not blown up past this when it is framed.
+const FIT_ZOOM = 1.1;
+// Height of the header that floats over the canvas on wide screens.
+const HEADER_INSET = 118;
+// Width of the details card that opens on the right on wide screens.
+const PANEL_INSET = 368;
+// Zoom used when flying to a single topic from search.
+const FOCUS_ZOOM = 1;
+// How long the pointer rests on a topic before its link preview shows.
+const PREVIEW_DELAY = 220;
+const LABEL_HEIGHT = 60;
+// Sweep origin: each topic starts part-way in and rotated back around its centre.
+const SWEEP_TURN = -0.7;
+const SWEEP_SHRINK = 0.4;
+const FALLBACK_PROGRESS: Progress = { done: 0, total: 1, status: "todo" };
+const NO_MOTION: Motion = { sweep: 0, delay: 0, fromX: 0, fromY: 0 };
 
 // Nodes are positioned by their centre, so the content shifts back by half its own size.
 const ANCHOR = "absolute -translate-x-1/2 -translate-y-1/2";
 // React Flow hides nodes it cannot measure, so each one keeps a 1px box at its centre.
-const NODE_BOX = "relative size-px";
+const NODE_BOX = "relative size-px transition-opacity duration-300";
 
 const CENTER_HANDLE_STYLE = {
   left: 0,
@@ -94,98 +135,63 @@ function CenterHandles() {
   );
 }
 
-function enterStyle(delay: number) {
-  return { "--enter-delay": `${delay}ms` } as CSSProperties;
+function motionStyle({ delay, fromX, fromY }: Motion) {
+  return {
+    "--enter-delay": `${delay}ms`,
+    "--from-x": `${fromX}px`,
+    "--from-y": `${fromY}px`,
+  } as CSSProperties;
 }
 
-// Feeds the pointer position to the pill's gradient, as a share of its own size.
-function trackPointer(event: PointerEvent<HTMLDivElement>) {
-  const el = event.currentTarget;
-  const rect = el.getBoundingClientRect();
-  el.style.setProperty(
-    "--mx",
-    `${((event.clientX - rect.left) / rect.width) * 100}%`,
-  );
-  el.style.setProperty(
-    "--my",
-    `${((event.clientY - rect.top) / rect.height) * 100}%`,
-  );
+function motionClass({ sweep }: Motion) {
+  return sweep > 0 ? "sm-sweep" : "sm-enter";
 }
 
 function TopicNode({ id, data, selected }: NodeProps<TopicFlowNode>) {
   const actions = useContext(CanvasActionsContext);
-  const gradientId = useId();
-  const { title, depth, progress, childCount, collapsed, enterDelay } = data;
+  const { title, depth, progress, childCount, collapsed, dimmed } = data;
 
   if (depth === 0) {
-    const circumference = 2 * Math.PI * 74;
     const fraction = progress.total > 0 ? progress.done / progress.total : 0;
     return (
-      <div className={NODE_BOX}>
+      <div className={cn(NODE_BOX, dimmed && "opacity-35")}>
         <div className={ANCHOR}>
           <div
-            className="sm-enter sm-press group relative size-40"
-            style={enterStyle(enterDelay)}
+            key={data.motion.sweep}
+            data-status={progress.status}
+            data-selected={selected}
+            data-cursor-target=""
+            style={motionStyle(data.motion)}
+            className={cn(
+              motionClass(data.motion),
+              "sm-box sm-box-root sm-press relative flex size-40 flex-col items-center justify-center bg-background p-4 text-center",
+            )}
           >
-            <div
+            {/* Progress runs clockwise around the edge of the box, from the top left. */}
+            <svg
+              viewBox="0 0 160 160"
               aria-hidden="true"
-              className="sm-halo pointer-events-none absolute -inset-16 rounded-full group-hover:opacity-100!"
-              style={{ opacity: 0.35 + fraction * 0.5 }}
-            />
-            <div
-              className={cn(
-                "relative flex size-full flex-col items-center justify-center rounded-full bg-background p-5 text-center",
-                selected && "outline-2 outline-offset-4 outline-foreground/60",
-              )}
+              className="pointer-events-none absolute inset-0 size-full"
             >
-              <svg
-                viewBox="0 0 160 160"
-                aria-hidden="true"
-                className="absolute inset-0 -rotate-90"
-              >
-                <defs>
-                  <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-                    <stop
-                      offset="0"
-                      style={{ stopColor: "var(--status-done)" }}
-                    />
-                    <stop
-                      offset="1"
-                      style={{
-                        stopColor:
-                          "color-mix(in oklab, var(--status-done) 55%, var(--foreground))",
-                      }}
-                    />
-                  </linearGradient>
-                </defs>
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="74"
-                  fill="none"
-                  strokeWidth="3"
-                  className="stroke-foreground/15"
-                />
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="74"
-                  fill="none"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  stroke={`url(#${gradientId})`}
-                  strokeDasharray={`${fraction * circumference} ${circumference}`}
-                  className="sm-progress"
-                />
-              </svg>
-              <span className="text-base leading-tight font-semibold text-balance">
-                {title}
-              </span>
-              <span className="mt-1.5 text-xs text-muted-foreground tabular-nums">
-                {progress.done} of {progress.total} studied
-              </span>
-              {selected && <AddButton onClick={() => actions?.onAdd(id)} />}
-            </div>
+              <rect
+                x="1.5"
+                y="1.5"
+                width="157"
+                height="157"
+                fill="none"
+                strokeWidth="3"
+                pathLength={100}
+                strokeDasharray={`${fraction * 100} 100`}
+                className="sm-progress stroke-(--status-done)"
+              />
+            </svg>
+            <span className="relative text-[15px] leading-tight font-bold text-balance">
+              {title}
+            </span>
+            <span className="relative mt-1.5 text-[11px] text-muted-foreground tabular-nums">
+              {progress.done}/{progress.total} studied
+            </span>
+            {selected && <AddButton onClick={() => actions?.onAdd(id)} />}
           </div>
         </div>
         <CenterHandles />
@@ -194,28 +200,27 @@ function TopicNode({ id, data, selected }: NodeProps<TopicFlowNode>) {
   }
 
   return (
-    <div className={NODE_BOX}>
+    <div className={cn(NODE_BOX, dimmed && "opacity-35")}>
       <div className={ANCHOR}>
         <div
+          key={data.motion.sweep}
           data-status={progress.status}
           data-selected={selected}
-          onPointerMove={trackPointer}
-          style={enterStyle(enterDelay)}
+          data-cursor-target=""
+          style={motionStyle(data.motion)}
           className={cn(
-            "sm-pill sm-enter sm-press relative flex w-max max-w-48 items-center gap-2 rounded-full border bg-background py-1.5 pr-1.5 pl-2.5",
-            depth === 1
-              ? "border-foreground/35 text-[15px] font-medium"
-              : "border-foreground/15 text-[13px]",
-            progress.status === "done" && "border-(--status-done)/60",
+            motionClass(data.motion),
+            "sm-box sm-press relative flex w-max max-w-72 items-center gap-1.5 bg-background px-[9px] py-[5px]",
+            depth === 1 ? "text-sm font-semibold" : "text-[12.5px]",
           )}
         >
-          <StatusGlyph status={progress.status} />
-          <span className="min-w-0 pr-1 leading-tight text-pretty">
+          <StatusGlyph status={progress.status} className="size-3" />
+          <span className="relative min-w-0 leading-tight text-pretty">
             {title}
           </span>
           {childCount > 0 && (
             <>
-              <span className="text-xs font-normal text-muted-foreground tabular-nums">
+              <span className="relative text-[11px] font-normal text-muted-foreground tabular-nums">
                 {progress.done}/{progress.total}
               </span>
               <button
@@ -227,10 +232,12 @@ function TopicNode({ id, data, selected }: NodeProps<TopicFlowNode>) {
                 }
                 aria-expanded={!collapsed}
                 onClick={(event) => {
+                  // In a map that is not open, the click falls through and opens the map.
+                  if (dimmed) return;
                   event.stopPropagation();
                   actions?.onToggle(id);
                 }}
-                className="sm-press nodrag nopan flex h-6 min-w-6 items-center justify-center rounded-full bg-muted px-1.5 text-xs font-normal text-muted-foreground tabular-nums hover:bg-foreground/15 hover:text-foreground"
+                className="sm-press nodrag nopan relative flex h-5 min-w-5 items-center justify-center border border-foreground/25 bg-muted px-1 text-[11px] font-normal text-muted-foreground tabular-nums hover:bg-foreground/15 hover:text-foreground"
               >
                 {collapsed ? (
                   `+${childCount}`
@@ -257,9 +264,9 @@ function AddButton({ onClick }: { onClick: () => void }) {
         event.stopPropagation();
         onClick();
       }}
-      className="sm-press sm-appear nodrag nopan absolute -right-2 -bottom-3 flex size-6 items-center justify-center rounded-full bg-foreground text-background shadow-sm hover:scale-110"
+      className="sm-press sm-appear nodrag nopan absolute -right-2.5 -bottom-2.5 z-10 flex size-5 items-center justify-center border border-background bg-foreground text-background"
     >
-      <IconPlus className="size-3.5" stroke={2.5} />
+      <IconPlus className="size-3" stroke={3} />
     </button>
   );
 }
@@ -268,7 +275,7 @@ function AddButton({ onClick }: { onClick: () => void }) {
 function RingsNode({ data }: NodeProps<RingsFlowNode>) {
   const size = data.rings * data.ringStep * 2 + 4;
   return (
-    <div className={NODE_BOX}>
+    <div className={cn(NODE_BOX, data.dimmed && "opacity-35")}>
       <svg
         width={size}
         height={size}
@@ -291,10 +298,59 @@ function RingsNode({ data }: NodeProps<RingsFlowNode>) {
   );
 }
 
-function RadialEdge({ data }: EdgeProps<RadialFlowEdge>) {
+// Map name above each map. It holds its size on screen, so it reads from far out.
+function LabelNode({ data }: NodeProps<LabelFlowNode>) {
+  const actions = useContext(CanvasActionsContext);
+  const { zoom } = useViewport();
+  return (
+    <div className="relative size-px">
+      <div
+        className="absolute bottom-0 left-0 origin-bottom"
+        style={{
+          transform: `translateX(-50%) scale(${Math.min(1 / zoom, 5)})`,
+        }}
+      >
+        <button
+          type="button"
+          tabIndex={data.hidden ? -1 : 0}
+          onClick={() => actions?.onActivate(data.mapId)}
+          className={cn(
+            "sm-press nodrag nopan flex flex-col items-center rounded-lg px-3 py-1.5 whitespace-nowrap hover:bg-foreground/10",
+            data.hidden && "pointer-events-none opacity-0",
+          )}
+        >
+          <span className="text-[15px] font-semibold">{data.title}</span>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {data.progress.done} of {data.progress.total} studied
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// React Flow remounts edges when their nodes are re-measured, which would replay the entrance.
+// Each edge's entrance is recorded here once it has finished, so it only ever plays once.
+const finishedEntrances = new Set<string>();
+
+function RadialEdge({ id, data }: EdgeProps<RadialFlowEdge>) {
+  const sweep = data?.motion.sweep ?? 0;
+  const delay = data?.motion.delay ?? 0;
+  const entrance = `${id}:${sweep}`;
+
+  useEffect(() => {
+    const timer = setTimeout(
+      () => finishedEntrances.add(entrance),
+      delay + 800,
+    );
+    return () => clearTimeout(timer);
+  }, [entrance, delay]);
+
   if (!data) return null;
+  const entering = !finishedEntrances.has(entrance);
   return (
     <path
+      key={data.motion.sweep}
       d={data.path}
       fill="none"
       strokeLinecap="round"
@@ -302,9 +358,14 @@ function RadialEdge({ data }: EdgeProps<RadialFlowEdge>) {
       strokeDasharray={data.status === "todo" ? "3 5" : undefined}
       data-status={data.status}
       data-trail={data.trail}
-      style={enterStyle(data.enterDelay)}
+      style={{
+        ...motionStyle(data.motion),
+        transform: `translate(${data.offset.x}px, ${data.offset.y}px)`,
+        opacity: data.dimmed ? 0.3 : 1,
+      }}
       className={cn(
-        "sm-edge sm-edge-enter",
+        "sm-edge",
+        entering && (sweep > 0 ? "sm-edge-sweep" : "sm-edge-enter"),
         data.status === "done" && "stroke-(--status-done)",
         data.status === "doing" && "stroke-(--status-doing)",
         data.status === "todo" && "stroke-foreground/30",
@@ -313,30 +374,41 @@ function RadialEdge({ data }: EdgeProps<RadialFlowEdge>) {
   );
 }
 
-const nodeTypes = { topic: TopicNode, rings: RingsNode };
+const nodeTypes = { topic: TopicNode, rings: RingsNode, label: LabelNode };
 const edgeTypes = { radial: RadialEdge };
 
 type MapCanvasProps = CanvasActions & {
-  map: StudyMap;
+  maps: StudyMap[];
+  topics: Map<string, Topic>;
+  childIndex: ChildIndex;
   progress: Map<string, Progress>;
   collapsed: ReadonlySet<string>;
   selectedId: string | null;
+  activeMapId: string | null;
+  // A topic to fly to. A new token replays the flight, even for the same topic.
+  focus: { id: string; token: number } | null;
   onSelect: (id: string | null) => void;
 };
 
 function Flow({
-  map,
+  maps,
+  topics,
+  childIndex,
   progress,
   collapsed,
   selectedId,
+  activeMapId,
+  focus,
   onSelect,
   onToggle,
   onAdd,
+  onActivate,
 }: MapCanvasProps) {
   const { resolvedTheme } = useTheme();
-  const { fitBounds, setCenter } = useReactFlow();
+  const { setViewport, setCenter } = useReactFlow();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  // The first paint cascades out from the centre; later additions only stagger among siblings.
+  // The first paint cascades out from each centre; later additions only stagger among siblings.
   const [settled, setSettled] = useState(false);
 
   useEffect(() => {
@@ -344,75 +416,160 @@ function Flow({
     return () => clearTimeout(timer);
   }, []);
 
-  const layout = useMemo(() => radialLayout(map, collapsed), [map, collapsed]);
+  // Opening a map bumps its counter, which remounts its topics and replays the sweep.
+  const focusToken = focus?.token ?? 0;
+  const [sweeps, setSweeps] = useState<{
+    active: string | null;
+    token: number;
+    counts: Record<string, number>;
+  }>({ active: null, token: 0, counts: {} });
+  if (sweeps.active !== activeMapId || sweeps.token !== focusToken) {
+    setSweeps({
+      active: activeMapId,
+      token: focusToken,
+      counts: activeMapId
+        ? {
+            ...sweeps.counts,
+            [activeMapId]: (sweeps.counts[activeMapId] ?? 0) + 1,
+          }
+        : sweeps.counts,
+    });
+  }
 
-  const enterDelays = useMemo(() => {
-    const delays = new Map<string, number>();
-    const siblingCount = new Map<string | null, number>();
-    for (const placed of layout.placed) {
-      const index = siblingCount.get(placed.parentId) ?? 0;
-      siblingCount.set(placed.parentId, index + 1);
-      delays.set(
-        placed.id,
-        settled ? index * 35 : placed.depth * 90 + index * 25,
-      );
+  const layout = useMemo(
+    () => libraryLayout(maps, collapsed),
+    [maps, collapsed],
+  );
+
+  const motions = useMemo(() => {
+    const result = new Map<string, Motion>();
+    const cos = Math.cos(SWEEP_TURN);
+    const sin = Math.sin(SWEEP_TURN);
+
+    for (const cluster of layout.clusters) {
+      const sweep = sweeps.counts[cluster.mapId] ?? 0;
+      const siblingCount = new Map<string | null, number>();
+      for (const placed of cluster.layout.placed) {
+        const index = siblingCount.get(placed.parentId) ?? 0;
+        siblingCount.set(placed.parentId, index + 1);
+
+        // Sweep clockwise from twelve o'clock, inner rings first.
+        const fullTurn = 2 * Math.PI;
+        const turn =
+          (((placed.angle + Math.PI / 2) % fullTurn) + fullTurn) % fullTurn;
+        const startX = (placed.x * cos - placed.y * sin) * SWEEP_SHRINK;
+        const startY = (placed.x * sin + placed.y * cos) * SWEEP_SHRINK;
+
+        result.set(placed.id, {
+          sweep,
+          delay:
+            sweep > 0
+              ? 180 + placed.depth * 110 + (turn / fullTurn) * 320
+              : settled
+                ? index * 35
+                : placed.depth * 90 + index * 25,
+          fromX: startX - placed.x,
+          fromY: startY - placed.y,
+        });
+      }
     }
-    return delays;
-  }, [layout, settled]);
+    return result;
+  }, [layout, sweeps.counts, settled]);
 
   const nodes = useMemo(() => {
-    const children = indexChildren(map);
-    const topics = new Map(map.topics.map((topic) => [topic.id, topic]));
-    const fallback: Progress = { done: 0, total: 1, status: "todo" };
+    const result: (RingsFlowNode | LabelFlowNode | TopicFlowNode)[] = [];
 
-    const rings: RingsFlowNode = {
-      id: "__rings",
-      type: "rings",
-      position: { x: 0, y: 0 },
-      data: { ringStep: layout.ringStep, rings: layout.rings },
-      selectable: false,
-      focusable: false,
-      draggable: false,
-      zIndex: -1,
-      style: { pointerEvents: "none" },
-    };
+    for (const cluster of layout.clusters) {
+      const { mapId, offset } = cluster;
+      const dimmed = activeMapId !== null && activeMapId !== mapId;
 
-    const topicNodes: TopicFlowNode[] = layout.placed.map((placed) => ({
-      id: placed.id,
-      type: "topic",
-      position: { x: placed.x, y: placed.y },
-      selected: placed.id === selectedId,
-      data: {
-        title: topics.get(placed.id)?.title ?? "",
-        depth: placed.depth,
-        progress: progress.get(placed.id) ?? fallback,
-        childCount: children.get(placed.id)?.length ?? 0,
-        collapsed: collapsed.has(placed.id),
-        enterDelay: enterDelays.get(placed.id) ?? 0,
-      },
-    }));
+      result.push({
+        id: `${mapId}::rings`,
+        type: "rings",
+        position: offset,
+        data: {
+          ringStep: cluster.layout.ringStep,
+          rings: cluster.layout.rings,
+          dimmed,
+        },
+        selectable: false,
+        focusable: false,
+        draggable: false,
+        zIndex: -1,
+        style: { pointerEvents: "none" },
+      });
 
-    return [rings, ...topicNodes];
-  }, [map, layout, progress, collapsed, selectedId, enterDelays]);
+      result.push({
+        id: `${mapId}::label`,
+        type: "label",
+        position: { x: offset.x, y: cluster.bounds.y - 28 },
+        data: {
+          mapId,
+          title: topics.get(cluster.rootId)?.title ?? "",
+          progress: progress.get(cluster.rootId) ?? FALLBACK_PROGRESS,
+          hidden: activeMapId === mapId,
+        },
+        selectable: false,
+        focusable: false,
+        draggable: false,
+        zIndex: 1,
+      });
 
-  const edges = useMemo(() => {
-    const placedById = new Map(layout.placed.map((p) => [p.id, p]));
-
-    // The hovered topic lights its route back to the centre.
-    const trail = new Set<string>();
-    for (
-      let current = hoveredId ? placedById.get(hoveredId) : undefined;
-      current;
-      current = current.parentId ? placedById.get(current.parentId) : undefined
-    ) {
-      trail.add(current.id);
+      for (const placed of cluster.layout.placed) {
+        result.push({
+          id: placed.id,
+          type: "topic",
+          position: { x: placed.x + offset.x, y: placed.y + offset.y },
+          selected: placed.id === selectedId,
+          data: {
+            mapId,
+            title: topics.get(placed.id)?.title ?? "",
+            depth: placed.depth,
+            progress: progress.get(placed.id) ?? FALLBACK_PROGRESS,
+            childCount: childIndex.get(placed.id)?.length ?? 0,
+            collapsed: collapsed.has(placed.id),
+            dimmed,
+            motion: motions.get(placed.id) ?? NO_MOTION,
+          },
+        });
+      }
     }
 
-    return layout.placed.flatMap((placed): RadialFlowEdge[] => {
-      const parent = placed.parentId && placedById.get(placed.parentId);
-      if (!parent) return [];
-      return [
-        {
+    return result;
+  }, [
+    layout,
+    topics,
+    childIndex,
+    progress,
+    collapsed,
+    selectedId,
+    activeMapId,
+    motions,
+  ]);
+
+  const edges = useMemo(() => {
+    const result: RadialFlowEdge[] = [];
+
+    for (const cluster of layout.clusters) {
+      const placedById = new Map(cluster.layout.placed.map((p) => [p.id, p]));
+      const dimmed = activeMapId !== null && activeMapId !== cluster.mapId;
+
+      // The hovered topic lights its route back to the centre.
+      const trail = new Set<string>();
+      for (
+        let current = hoveredId ? placedById.get(hoveredId) : undefined;
+        current;
+        current = current.parentId
+          ? placedById.get(current.parentId)
+          : undefined
+      ) {
+        trail.add(current.id);
+      }
+
+      for (const placed of cluster.layout.placed) {
+        const parent = placed.parentId && placedById.get(placed.parentId);
+        if (!parent) continue;
+        result.push({
           id: `${parent.id}->${placed.id}`,
           type: "radial",
           source: parent.id,
@@ -421,66 +578,152 @@ function Flow({
           selectable: false,
           data: {
             path: radialLinkPath(parent, placed),
+            offset: cluster.offset,
             status: progress.get(placed.id)?.status ?? "todo",
             trail: trail.has(placed.id),
-            enterDelay: enterDelays.get(placed.id) ?? 0,
+            dimmed,
+            motion: motions.get(placed.id) ?? NO_MOTION,
           },
-        },
-      ];
-    });
-  }, [layout, progress, hoveredId, enterDelays]);
+        });
+      }
+    }
 
-  // Frame the topics. On a phone, stay readable and let the map overflow instead.
+    return result;
+  }, [layout, progress, hoveredId, activeMapId, motions]);
+
+  // Fly to the open map, or pull back to show them all.
   const frame = useCallback(
     (duration: number) => {
-      if (window.matchMedia("(max-width: 767px)").matches) {
-        void setCenter(0, 0, { zoom: PHONE_ZOOM, duration });
-      } else {
-        void fitBounds(layout.bounds, { padding: 0.08, duration });
+      const container = containerRef.current;
+      if (!container) return;
+      const phone = window.matchMedia("(max-width: 767px)").matches;
+      const active = layout.clusters.find((c) => c.mapId === activeMapId);
+
+      if (active && phone) {
+        // On a phone, stay readable and let the map overflow instead.
+        void setCenter(active.offset.x, active.offset.y, {
+          zoom: PHONE_ZOOM,
+          duration,
+        });
+        return;
       }
+
+      // Fit inside the area the header leaves free. The overview also keeps room for map names.
+      const inset = {
+        top: (phone ? 16 : HEADER_INSET) + (active ? 0 : LABEL_HEIGHT),
+        side: phone ? 16 : 48,
+        bottom: phone ? 24 : 40,
+      };
+      const bounds = active ? active.bounds : layout.bounds;
+      const freeWidth = container.clientWidth - inset.side * 2;
+      const freeHeight = container.clientHeight - inset.top - inset.bottom;
+      const zoom = Math.min(
+        MAX_ZOOM,
+        Math.max(
+          MIN_ZOOM,
+          Math.min(
+            FIT_ZOOM,
+            freeWidth / bounds.width,
+            freeHeight / bounds.height,
+          ),
+        ),
+      );
+      void setViewport(
+        {
+          zoom,
+          x:
+            inset.side +
+            (freeWidth - bounds.width * zoom) / 2 -
+            bounds.x * zoom,
+          y:
+            inset.top +
+            (freeHeight - bounds.height * zoom) / 2 -
+            bounds.y * zoom,
+        },
+        { duration },
+      );
     },
-    [fitBounds, setCenter, layout],
+    [setViewport, setCenter, layout, activeMapId],
   );
 
-  // Reframe whenever branches open, close, or gain topics.
-  const visibleCount = layout.placed.length;
+  // Reframe quickly when topics change, and with a longer flight when the open map changes.
+  const visibleCount = nodes.length;
   useEffect(() => {
     const request = requestAnimationFrame(() => frame(350));
     return () => cancelAnimationFrame(request);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refit on topic count only
   }, [visibleCount]);
 
-  const actions = useMemo(() => ({ onToggle, onAdd }), [onToggle, onAdd]);
+  useEffect(() => {
+    const request = requestAnimationFrame(() => frame(850));
+    return () => cancelAnimationFrame(request);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fly on map change only
+  }, [activeMapId]);
 
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const spotlightX = useSpring(pointerX, { stiffness: 120, damping: 20 });
-  const spotlightY = useSpring(pointerY, { stiffness: 120, damping: 20 });
-  const spotlightTransform = useMotionTemplate`translate(${spotlightX}px, ${spotlightY}px)`;
-  const [spotlightOn, setSpotlightOn] = useState(false);
+  // Declared after the framing effects above so that this flight is the one that wins.
+  useEffect(() => {
+    if (!focus) return;
+    const request = requestAnimationFrame(() => {
+      for (const cluster of layout.clusters) {
+        const placed = cluster.layout.placed.find((p) => p.id === focus.id);
+        if (!placed) continue;
+        // Sit the topic in the space the header and the details card leave free.
+        const wide = !window.matchMedia("(max-width: 767px)").matches;
+        void setCenter(
+          placed.x +
+            cluster.offset.x +
+            (wide ? PANEL_INSET / 2 / FOCUS_ZOOM : 0),
+          placed.y +
+            cluster.offset.y -
+            (wide ? HEADER_INSET / 2 / FOCUS_ZOOM : 0),
+          { zoom: FOCUS_ZOOM, duration: 900 },
+        );
+      }
+    });
+    return () => cancelAnimationFrame(request);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fly once per search pick
+  }, [focusToken]);
+
+  // Link preview for the topic under the pointer, once the pointer has settled on it.
+  const [preview, setPreview] = useState<{
+    id: string;
+    anchor: PreviewAnchor;
+  } | null>(null);
+  useEffect(() => {
+    if (!hoveredId) return;
+    const timer = setTimeout(() => {
+      const box = document.querySelector(
+        `.react-flow__node[data-id="${CSS.escape(hoveredId)}"] .sm-box`,
+      );
+      // No preview for topics in a map that is dimmed behind the open one.
+      if (!box || box.closest(".opacity-35")) return;
+      const rect = box.getBoundingClientRect();
+      setPreview({
+        id: hoveredId,
+        anchor: {
+          left: rect.left,
+          top: rect.top,
+          width: rect.width,
+          height: rect.height,
+        },
+      });
+    }, PREVIEW_DELAY);
+    return () => {
+      clearTimeout(timer);
+      setPreview(null);
+    };
+  }, [hoveredId]);
+  const previewLinks = preview ? (topics.get(preview.id)?.links ?? []) : [];
+
+  const actions = useMemo(
+    () => ({ onToggle, onAdd, onActivate }),
+    [onToggle, onAdd, onActivate],
+  );
 
   return (
     <CanvasActionsContext.Provider value={actions}>
-      <div
-        className="relative size-full overflow-hidden"
-        onPointerMove={(event) => {
-          const rect = event.currentTarget.getBoundingClientRect();
-          pointerX.set(event.clientX - rect.left - SPOTLIGHT_SIZE / 2);
-          pointerY.set(event.clientY - rect.top - SPOTLIGHT_SIZE / 2);
-          if (!spotlightOn) setSpotlightOn(true);
-        }}
-        onPointerLeave={() => setSpotlightOn(false)}
-      >
-        <motion.div
-          aria-hidden="true"
-          className="sm-spotlight pointer-events-none absolute top-0 left-0 rounded-full transition-opacity duration-500"
-          style={{
-            width: SPOTLIGHT_SIZE,
-            height: SPOTLIGHT_SIZE,
-            transform: spotlightTransform,
-            opacity: spotlightOn ? 1 : 0,
-          }}
-        />
+      <div ref={containerRef} className="relative size-full overflow-hidden">
+        <CursorWave />
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -492,19 +735,31 @@ function Flow({
           elementsSelectable={false}
           onInit={() => frame(0)}
           onNodeClick={(_, node) => {
-            if (node.type === "topic") onSelect(node.id);
+            if (node.type !== "topic") return;
+            // A click on another map opens it; a click inside the open map selects the topic.
+            if (node.data.mapId !== activeMapId) onActivate(node.data.mapId);
+            else onSelect(node.id);
           }}
           onNodeMouseEnter={(_, node) => {
             if (node.type === "topic") setHoveredId(node.id);
           }}
           onNodeMouseLeave={() => setHoveredId(null)}
           onPaneClick={() => onSelect(null)}
-          minZoom={0.15}
-          maxZoom={1.75}
+          onMoveStart={() => setPreview(null)}
+          minZoom={MIN_ZOOM}
+          maxZoom={MAX_ZOOM}
+          proOptions={{ hideAttribution: true }}
           style={{ background: "transparent" }}
         >
           <Controls position="bottom-left" showInteractive={false} />
         </ReactFlow>
+        {preview && previewLinks.length > 0 && (
+          <LinkPreview
+            key={preview.id}
+            links={previewLinks}
+            anchor={preview.anchor}
+          />
+        )}
       </div>
     </CanvasActionsContext.Provider>
   );

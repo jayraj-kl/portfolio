@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { StudyMap } from "@/components/learn/study-map";
 import { METADATA } from "@/lib/constants";
-import "./learn.css";
 
 export const metadata: Metadata = {
   title: `Study map | ${METADATA.title}`,

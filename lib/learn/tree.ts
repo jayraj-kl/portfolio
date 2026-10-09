@@ -76,13 +76,21 @@ export function descendantIds(map: StudyMap, id: string): Set<string> {
   return ids;
 }
 
+// Most topics a map can show on its first two rings before the second ring starts closed too.
+const OPEN_RING_LIMIT = 36;
+
 // Branches deeper than the second ring start closed so the map stays readable.
+// A large map closes its first ring as well, and opens branch by branch.
 export function defaultCollapsed(map: StudyMap): Set<string> {
   const children = indexChildren(map);
   const depths = depthOf(map);
+  const nearCentre = map.topics.filter(
+    (topic) => (depths.get(topic.id) ?? 0) <= 2,
+  ).length;
+  const closedFrom = nearCentre > OPEN_RING_LIMIT ? 1 : 2;
   const collapsed = new Set<string>();
   for (const topic of map.topics) {
-    if ((depths.get(topic.id) ?? 0) >= 2 && children.has(topic.id)) {
+    if ((depths.get(topic.id) ?? 0) >= closedFrom && children.has(topic.id)) {
       collapsed.add(topic.id);
     }
   }

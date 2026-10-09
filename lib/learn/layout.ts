@@ -34,15 +34,24 @@ export function polar(angle: number, radius: number) {
   return { x: radius * Math.cos(angle), y: radius * Math.sin(angle) };
 }
 
+// Matches the max width of a topic box in the canvas (max-w-72).
+const MAX_BOX_WIDTH = 288;
+
 // Rough rendered size of a topic label; exact measurement is not needed to avoid collisions.
 function estimateBox(title: string, depth: number, hasChildren: boolean): Box {
   if (depth === 0) return { width: 160, height: 160 };
-  const charWidth = depth === 1 ? 8.6 : 7.2;
-  const textWidth = Math.min(title.length * charWidth, 150);
-  const wraps = title.length * charWidth > 150;
+  // Monospaced, so width follows the character count closely.
+  const charWidth = depth === 1 ? 8.5 : 7.6;
+  const lineHeight = depth === 1 ? 17.5 : 15.7;
+  // Padding, border and status marker, plus the count and toggle on a topic with subtopics.
+  const chrome = 40 + (hasChildren ? 64 : 0);
+  const room = MAX_BOX_WIDTH - chrome;
+  const textWidth = title.length * charWidth;
+  // Wrapping breaks at words, so lines fill a little less than the full width.
+  const lines = Math.max(1, Math.ceil((textWidth * 1.12) / room));
   return {
-    width: textWidth + 48 + (hasChildren ? 68 : 0),
-    height: (depth === 1 ? 38 : 32) + (wraps ? 16 : 0),
+    width: (lines > 1 ? room : textWidth) + chrome,
+    height: lines * lineHeight + 14,
   };
 }
 
@@ -93,9 +102,9 @@ export function radialLayout(
 
   const laidOut = tree<Nested>()
     .size([2 * Math.PI, 1])
-    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / Math.max(1, a.depth))(
-    root,
-  );
+    .separation(
+      (a, b) => (a.parent === b.parent ? 1 : 2) / Math.max(1, a.depth),
+    )(root);
 
   const placed = laidOut.descendants().map((node) => {
     // Rotate so the first branch starts at twelve o'clock.
@@ -131,6 +140,72 @@ export function radialLayout(
   const bounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 
   return { placed, ringStep, rings, bounds };
+}
+
+export type MapCluster = {
+  mapId: string;
+  rootId: string;
+  offset: { x: number; y: number };
+  layout: RadialLayout;
+  // In canvas coordinates, unlike the layout which is centred on its own root.
+  bounds: RadialLayout["bounds"];
+};
+
+export type LibraryLayout = {
+  clusters: MapCluster[];
+  bounds: RadialLayout["bounds"];
+};
+
+const CLUSTER_GAP = 320;
+
+// Lays every map out around its own centre, then packs the centres like a honeycomb.
+export function libraryLayout(
+  maps: StudyMap[],
+  collapsed: ReadonlySet<string>,
+): LibraryLayout {
+  const layouts = maps.map((map) => radialLayout(map, collapsed));
+  const reach = Math.max(
+    ...layouts.map(({ bounds }) =>
+      Math.max(
+        -bounds.x,
+        -bounds.y,
+        bounds.x + bounds.width,
+        bounds.y + bounds.height,
+      ),
+    ),
+  );
+  const cell = reach * 2 + CLUSTER_GAP;
+  const columns = Math.ceil(Math.sqrt(maps.length));
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  const clusters = maps.map((map, index) => {
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    const offset = {
+      x: (column + (row % 2 === 1 ? 0.5 : 0)) * cell,
+      y: row * cell * 0.87,
+    };
+    const layout = layouts[index];
+    const bounds = {
+      ...layout.bounds,
+      x: layout.bounds.x + offset.x,
+      y: layout.bounds.y + offset.y,
+    };
+    minX = Math.min(minX, bounds.x);
+    minY = Math.min(minY, bounds.y);
+    maxX = Math.max(maxX, bounds.x + bounds.width);
+    maxY = Math.max(maxY, bounds.y + bounds.height);
+    return { mapId: map.id, rootId: getRoot(map).id, offset, layout, bounds };
+  });
+
+  return {
+    clusters,
+    bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY },
+  };
 }
 
 // Curve that leaves the parent along its spoke and arrives along the child's spoke.

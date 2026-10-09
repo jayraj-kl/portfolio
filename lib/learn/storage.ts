@@ -1,42 +1,48 @@
-import { createSeedMap } from "./seed";
-import type { StudyMap } from "./types";
+import { createSeedLibrary } from "./seed";
+import type { StudyLibrary } from "./types";
 
 // The app only talks to this interface, so a database-backed implementation can replace it.
-export interface StudyMapStorage {
-  load(): Promise<StudyMap>;
-  save(map: StudyMap): Promise<void>;
-  reset(): Promise<StudyMap>;
+export interface StudyLibraryStorage {
+  load(): Promise<StudyLibrary>;
+  save(library: StudyLibrary): Promise<void>;
+  reset(): Promise<StudyLibrary>;
 }
 
-const STORAGE_KEY = "study-map:v1";
+const STORAGE_KEY = "study-maps:v4";
 
-function isStudyMap(value: unknown): value is StudyMap {
+function isStudyLibrary(value: unknown): value is StudyLibrary {
   if (typeof value !== "object" || value === null) return false;
-  const topics = (value as StudyMap).topics;
+  const maps = (value as StudyLibrary).maps;
   return (
-    Array.isArray(topics) && topics.some((topic) => topic?.parentId === null)
+    Array.isArray(maps) &&
+    maps.length > 0 &&
+    maps.every(
+      (map) =>
+        Array.isArray(map?.topics) &&
+        map.topics.some((topic) => topic?.parentId === null),
+    )
   );
 }
 
-export const localStudyMapStorage: StudyMapStorage = {
+export const localStudyLibraryStorage: StudyLibraryStorage = {
   async load() {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed: unknown = JSON.parse(raw);
-        if (isStudyMap(parsed)) return parsed;
+        if (isStudyLibrary(parsed)) return parsed;
       }
     } catch {
-      // Unreadable or blocked storage falls back to the sample map.
+      // Unreadable or blocked storage falls back to the sample maps.
     }
-    return createSeedMap();
+    return createSeedLibrary();
   },
 
-  async save(map) {
+  async save(library) {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
     } catch {
-      // Storage can be full or disabled; the map still works for this visit.
+      // Storage can be full or disabled; the maps still work for this visit.
     }
   },
 
@@ -46,6 +52,6 @@ export const localStudyMapStorage: StudyMapStorage = {
     } catch {
       // Nothing to clear.
     }
-    return createSeedMap();
+    return createSeedLibrary();
   },
 };

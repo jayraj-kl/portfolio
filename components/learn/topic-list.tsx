@@ -2,11 +2,7 @@
 
 import { IconChevronRight } from "@tabler/icons-react";
 import { StatusGlyph } from "@/components/learn/status-glyph";
-import {
-  STATUS_LABEL,
-  nextStatus,
-  type ChildIndex,
-} from "@/lib/learn/tree";
+import { STATUS_LABEL, nextStatus, type ChildIndex } from "@/lib/learn/tree";
 import type { Progress, Status, Topic } from "@/lib/learn/types";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +19,7 @@ type TopicListProps = {
 
 export function TopicList(props: TopicListProps) {
   return (
-    <ul className="mx-auto w-full max-w-2xl px-4 pb-24">
+    <ul className="mx-auto w-full max-w-2xl px-4">
       <TopicRow {...props} topic={props.root} depth={0} />
     </ul>
   );
@@ -57,7 +53,11 @@ function TopicRow({
         {hasChildren && depth > 0 ? (
           <button
             type="button"
-            aria-label={open ? `Hide subtopics of ${topic.title}` : `Show subtopics of ${topic.title}`}
+            aria-label={
+              open
+                ? `Hide subtopics of ${topic.title}`
+                : `Show subtopics of ${topic.title}`
+            }
             aria-expanded={open}
             onClick={() => props.onToggle(topic.id)}
             className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"

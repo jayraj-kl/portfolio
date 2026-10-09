@@ -3,7 +3,7 @@
 import { IconTrash, IconX } from "@tabler/icons-react";
 import { useState } from "react";
 import { StatusGlyph } from "@/components/learn/status-glyph";
-import type { StudyMapActions } from "@/hooks/use-study-map";
+import type { StudyLibraryActions } from "@/hooks/use-study-map";
 import { STATUS_LABEL, STATUS_ORDER } from "@/lib/learn/tree";
 import type { Progress, Topic } from "@/lib/learn/types";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,9 @@ type TopicPanelProps = {
   progress: Progress;
   hasChildren: boolean;
   isRoot: boolean;
-  actions: StudyMapActions;
+  actions: StudyLibraryActions;
+  // Only offered for a map's centre topic, and only while another map remains.
+  onDeleteMap?: () => void;
   onTopicsAdded: (parentId: string) => void;
   onClose: () => void;
 };
@@ -28,7 +30,8 @@ export function TopicPanel(props: TopicPanelProps) {
   return (
     <aside
       aria-label="Topic details"
-      className="sm-panel absolute inset-x-0 bottom-0 z-20 flex max-h-[62dvh] flex-col rounded-t-2xl border border-border bg-card text-card-foreground shadow-xl md:inset-x-auto md:top-4 md:right-4 md:bottom-4 md:max-h-none md:w-88 md:rounded-xl"
+      data-arrow-cursor=""
+      className="sm-panel absolute inset-x-0 bottom-0 z-20 flex max-h-[62dvh] flex-col rounded-t-2xl border border-border bg-card text-card-foreground shadow-xl md:inset-x-auto md:top-[118px] md:right-4 md:bottom-4 md:max-h-none md:w-88 md:rounded-xl"
     >
       <PanelBody key={props.topic.id} {...props} />
     </aside>
@@ -40,6 +43,7 @@ function PanelBody({
   progress,
   hasChildren,
   isRoot,
+  onDeleteMap,
   actions,
   onTopicsAdded,
   onClose,
@@ -110,7 +114,7 @@ function PanelBody({
                   aria-checked={topic.status === status}
                   onClick={() => actions.patchTopic(topic.id, { status })}
                   className={cn(
-                    "sm-press flex items-center justify-center gap-1.5 rounded-md px-1 py-1.5 text-xs font-medium text-muted-foreground",
+                    "sm-press flex items-center justify-center gap-1 px-0.5 py-1.5 text-[11px] font-medium whitespace-nowrap text-muted-foreground",
                     topic.status === status &&
                       "bg-background text-foreground shadow-sm",
                   )}
@@ -149,7 +153,10 @@ function PanelBody({
           {topic.links.length > 0 && (
             <ul className="mb-2 flex flex-col gap-1">
               {topic.links.map((link, index) => (
-                <li key={`${link.url}-${index}`} className="flex items-center gap-1">
+                <li
+                  key={`${link.url}-${index}`}
+                  className="flex items-center gap-1"
+                >
                   <a
                     href={link.url}
                     target="_blank"
@@ -217,7 +224,9 @@ function PanelBody({
             rows={5}
             value={outline}
             onChange={(event) => setOutline(event.target.value)}
-            placeholder={"One topic per line\n  Indent a line to nest it\n  Like this"}
+            placeholder={
+              "One topic per line\n  Indent a line to nest it\n  Like this"
+            }
             className={cn(FIELD, "resize-y font-mono text-[13px]")}
           />
           <button
@@ -229,6 +238,26 @@ function PanelBody({
             Add subtopics
           </button>
         </section>
+
+        {isRoot && onDeleteMap && (
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Delete the map "${topic.title}" and everything in it?`,
+                )
+              ) {
+                onDeleteMap();
+                onClose();
+              }
+            }}
+            className="flex items-center gap-1.5 self-start rounded-md px-1 py-1 text-sm text-destructive hover:underline"
+          >
+            <IconTrash className="size-4" />
+            Delete map
+          </button>
+        )}
 
         {!isRoot && (
           <button

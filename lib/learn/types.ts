@@ -17,4 +17,8 @@ export type StudyMap = {
   topics: Topic[];
 };
 
+export type StudyLibrary = {
+  maps: StudyMap[];
+};
+
 export type Progress = { done: number; total: number; status: Status };

@@ -3,23 +3,25 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseOutline } from "@/lib/learn/outline-parser";
 import {
-  localStudyMapStorage,
-  type StudyMapStorage,
+  localStudyLibraryStorage,
+  type StudyLibraryStorage,
 } from "@/lib/learn/storage";
 import { descendantIds } from "@/lib/learn/tree";
-import type { StudyMap, Topic } from "@/lib/learn/types";
+import type { StudyLibrary, StudyMap, Topic } from "@/lib/learn/types";
 
 export type TopicPatch = Partial<
   Pick<Topic, "title" | "status" | "notes" | "links">
 >;
 
-export function useStudyMap(storage: StudyMapStorage = localStudyMapStorage) {
-  const [map, setMap] = useState<StudyMap | null>(null);
+export function useStudyLibrary(
+  storage: StudyLibraryStorage = localStudyLibraryStorage,
+) {
+  const [library, setLibrary] = useState<StudyLibrary | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     storage.load().then((loaded) => {
-      if (!cancelled) setMap(loaded);
+      if (!cancelled) setLibrary(loaded);
     });
     return () => {
       cancelled = true;
@@ -27,8 +29,8 @@ export function useStudyMap(storage: StudyMapStorage = localStudyMapStorage) {
   }, [storage]);
 
   const update = useCallback(
-    (change: (current: StudyMap) => StudyMap) => {
-      setMap((current) => {
+    (change: (current: StudyLibrary) => StudyLibrary) => {
+      setLibrary((current) => {
         if (!current) return current;
         const next = change(current);
         void storage.save(next);
@@ -38,12 +40,24 @@ export function useStudyMap(storage: StudyMapStorage = localStudyMapStorage) {
     [storage],
   );
 
+  // Topic ids are unique across maps, so a topic id is enough to find its map.
+  const updateMapOf = useCallback(
+    (topicId: string, change: (map: StudyMap) => StudyMap) => {
+      update((current) => ({
+        maps: current.maps.map((map) =>
+          map.topics.some((topic) => topic.id === topicId) ? change(map) : map,
+        ),
+      }));
+    },
+    [update],
+  );
+
   const actions = useMemo(
     () => ({
       patchTopic(id: string, patch: TopicPatch) {
-        update((current) => ({
-          ...current,
-          topics: current.topics.map((topic) =>
+        updateMapOf(id, (map) => ({
+          ...map,
+          topics: map.topics.map((topic) =>
             topic.id === id ? { ...topic, ...patch } : topic,
           ),
         }));
@@ -51,10 +65,10 @@ export function useStudyMap(storage: StudyMapStorage = localStudyMapStorage) {
 
       addTopic(parentId: string, title = "New topic") {
         const id = crypto.randomUUID();
-        update((current) => ({
-          ...current,
+        updateMapOf(parentId, (map) => ({
+          ...map,
           topics: [
-            ...current.topics,
+            ...map.topics,
             { id, parentId, title, status: "todo", notes: "", links: [] },
           ],
         }));
@@ -64,32 +78,64 @@ export function useStudyMap(storage: StudyMapStorage = localStudyMapStorage) {
       addOutline(parentId: string, text: string) {
         const topics = parseOutline(text, parentId);
         if (topics.length > 0) {
-          update((current) => ({
-            ...current,
-            topics: [...current.topics, ...topics],
+          updateMapOf(parentId, (map) => ({
+            ...map,
+            topics: [...map.topics, ...topics],
           }));
         }
         return topics.length;
       },
 
       removeTopic(id: string) {
-        update((current) => {
-          const removed = descendantIds(current, id);
+        updateMapOf(id, (map) => {
+          const removed = descendantIds(map, id);
           return {
-            ...current,
-            topics: current.topics.filter((topic) => !removed.has(topic.id)),
+            ...map,
+            topics: map.topics.filter((topic) => !removed.has(topic.id)),
           };
         });
       },
 
+      // A new map starts as a single centre topic, whose id doubles as the map id.
+      addMap(title = "New map") {
+        const id = crypto.randomUUID();
+        update((current) => ({
+          maps: [
+            ...current.maps,
+            {
+              id,
+              topics: [
+                {
+                  id,
+                  parentId: null,
+                  title,
+                  status: "todo",
+                  notes: "",
+                  links: [],
+                },
+              ],
+            },
+          ],
+        }));
+        return id;
+      },
+
+      removeMap(mapId: string) {
+        update((current) =>
+          current.maps.length > 1
+            ? { maps: current.maps.filter((map) => map.id !== mapId) }
+            : current,
+        );
+      },
+
       async reset() {
-        setMap(await storage.reset());
+        setLibrary(await storage.reset());
       },
     }),
-    [storage, update],
+    [storage, update, updateMapOf],
   );
 
-  return { map, actions };
+  return { library, actions };
 }
 
-export type StudyMapActions = ReturnType<typeof useStudyMap>["actions"];
+export type StudyLibraryActions = ReturnType<typeof useStudyLibrary>["actions"];
