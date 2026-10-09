@@ -11,24 +11,32 @@ export type PlacedTopic = {
   x: number;
   y: number;
   box: Box;
+  // Placed in the column view, which reads left to right instead of around the ring.
+  linear: boolean;
 };
 
 type Box = { width: number; height: number };
+type Bounds = { x: number; y: number; width: number; height: number };
 
 export type RadialLayout = {
   placed: PlacedTopic[];
   ringStep: number;
   rings: number;
-  bounds: { x: number; y: number; width: number; height: number };
+  bounds: Bounds;
+  // The focused branch and the route back to the centre, when a branch is open.
+  focusBounds: Bounds | null;
 };
 
 type Nested = { topic: Topic; children: Nested[] };
 
-const MIN_RING_STEP = 210;
+const MIN_RING_STEP = 175;
 // Arc length each outer topic needs so neighbouring labels do not collide.
-const ARC_PER_LEAF = 120;
+const ARC_PER_LEAF = 100;
 const LABEL_GAP = 8;
 const PUSH_STEP = 12;
+// Space between columns and rows of the column view.
+const COLUMN_GAP = 56;
+const ROW_GAP = 10;
 
 export function polar(angle: number, radius: number) {
   return { x: radius * Math.cos(angle), y: radius * Math.sin(angle) };
@@ -81,9 +89,24 @@ function separate(placed: PlacedTopic[]) {
   }
 }
 
+function boundsOf(items: PlacedTopic[]): Bounds {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const { x, y, box } of items) {
+    minX = Math.min(minX, x - box.width / 2);
+    maxX = Math.max(maxX, x + box.width / 2);
+    minY = Math.min(minY, y - box.height / 2);
+    maxY = Math.max(maxY, y + box.height / 2);
+  }
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+}
+
 export function radialLayout(
   map: StudyMap,
   collapsed: ReadonlySet<string>,
+  focusId: string | null = null,
 ): RadialLayout {
   const children = indexChildren(map);
   const nest = (topic: Topic): Nested => ({
@@ -106,7 +129,13 @@ export function radialLayout(
       (a, b) => (a.parent === b.parent ? 1 : 2) / Math.max(1, a.depth),
     )(root);
 
-  const placed = laidOut.descendants().map((node) => {
+  // Opening any topic below the centre lays the whole map out in columns, left to right.
+  const focusNode = focusId
+    ? laidOut.descendants().find((node) => node.data.topic.id === focusId)
+    : undefined;
+  const opened = focusNode && focusNode.depth > 0 ? focusNode : null;
+
+  const placed: PlacedTopic[] = laidOut.descendants().map((node) => {
     // Rotate so the first branch starts at twelve o'clock.
     const angle = node.x - Math.PI / 2;
     const radius = node.depth * ringStep;
@@ -122,24 +151,65 @@ export function radialLayout(
         node.depth,
         children.has(node.data.topic.id),
       ),
+      linear: false,
     };
   });
 
-  separate(placed);
-
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  for (const { x, y, box } of placed) {
-    minX = Math.min(minX, x - box.width / 2);
-    maxX = Math.max(maxX, x + box.width / 2);
-    minY = Math.min(minY, y - box.height / 2);
-    maxY = Math.max(maxY, y + box.height / 2);
+  if (!opened) {
+    separate(placed);
+    return {
+      placed,
+      ringStep,
+      rings,
+      bounds: boundsOf(placed),
+      focusBounds: null,
+    };
   }
-  const bounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 
-  return { placed, ringStep, rings, bounds };
+  const byId = new Map(placed.map((p) => [p.id, p]));
+  const rowHeight =
+    Math.max(...placed.map((p) => (p.depth === 0 ? 0 : p.box.height))) +
+    ROW_GAP;
+  const widths: number[] = [];
+  for (const { depth, box } of placed) {
+    widths[depth] = Math.max(widths[depth] ?? 0, box.width);
+  }
+  // Each column starts where the previous one ends.
+  const columns: number[] = [0];
+  for (let d = 1; d < widths.length; d++) {
+    columns[d] =
+      columns[d - 1] + widths[d - 1] / 2 + COLUMN_GAP + widths[d] / 2;
+  }
+
+  // Branches sit a little apart from each other, so each one reads as a group.
+  const rows = tree<Nested>()
+    .nodeSize([rowHeight, 1])
+    .separation((a, b) => (a.parent === b.parent ? 1 : 1.5))(
+    hierarchy(root.data),
+  );
+  for (const n of rows.descendants()) {
+    const item = byId.get(n.data.topic.id)!;
+    item.linear = true;
+    item.x = columns[n.depth];
+    item.y = n.x;
+    item.angle = 0;
+    item.radius = Math.hypot(item.x, item.y);
+  }
+
+  // Frame the opened topic with its subtopics, its siblings and the route back to the centre.
+  const framed = new Set(opened.descendants().map((n) => n.data.topic.id));
+  for (const sibling of opened.parent?.children ?? []) {
+    framed.add(sibling.data.topic.id);
+  }
+  for (const ancestor of opened.ancestors()) framed.add(ancestor.data.topic.id);
+
+  return {
+    placed,
+    ringStep,
+    rings: 0,
+    bounds: boundsOf(placed),
+    focusBounds: boundsOf(placed.filter((p) => framed.has(p.id))),
+  };
 }
 
 export type MapCluster = {
@@ -149,6 +219,7 @@ export type MapCluster = {
   layout: RadialLayout;
   // In canvas coordinates, unlike the layout which is centred on its own root.
   bounds: RadialLayout["bounds"];
+  focusBounds: RadialLayout["bounds"] | null;
 };
 
 export type LibraryLayout = {
@@ -156,16 +227,21 @@ export type LibraryLayout = {
   bounds: RadialLayout["bounds"];
 };
 
-const CLUSTER_GAP = 320;
+const CLUSTER_GAP = 220;
 
 // Lays every map out around its own centre, then packs the centres like a honeycomb.
 export function libraryLayout(
   maps: StudyMap[],
   collapsed: ReadonlySet<string>,
+  focusId: string | null = null,
 ): LibraryLayout {
-  const layouts = maps.map((map) => radialLayout(map, collapsed));
+  const layouts = maps.map((map) => radialLayout(map, collapsed, focusId));
+  // Cells are sized from the unfocused layouts, so opening a branch never shoves neighbouring maps.
+  const resting = focusId
+    ? maps.map((map) => radialLayout(map, collapsed))
+    : layouts;
   const reach = Math.max(
-    ...layouts.map(({ bounds }) =>
+    ...resting.map(({ bounds }) =>
       Math.max(
         -bounds.x,
         -bounds.y,
@@ -199,7 +275,19 @@ export function libraryLayout(
     minY = Math.min(minY, bounds.y);
     maxX = Math.max(maxX, bounds.x + bounds.width);
     maxY = Math.max(maxY, bounds.y + bounds.height);
-    return { mapId: map.id, rootId: getRoot(map).id, offset, layout, bounds };
+    const focusBounds = layout.focusBounds && {
+      ...layout.focusBounds,
+      x: layout.focusBounds.x + offset.x,
+      y: layout.focusBounds.y + offset.y,
+    };
+    return {
+      mapId: map.id,
+      rootId: getRoot(map).id,
+      offset,
+      layout,
+      bounds,
+      focusBounds,
+    };
   });
 
   return {
@@ -210,6 +298,11 @@ export function libraryLayout(
 
 // Curve that leaves the parent along its spoke and arrives along the child's spoke.
 export function radialLinkPath(source: PlacedTopic, target: PlacedTopic) {
+  if (target.linear) {
+    // In the column view, links leave to the right and arrive from the left.
+    const midX = (source.x + target.x) / 2;
+    return `M${source.x},${source.y} C${midX},${source.y} ${midX},${target.y} ${target.x},${target.y}`;
+  }
   const mid = (source.radius + target.radius) / 2;
   const c1 = polar(source.radius === 0 ? target.angle : source.angle, mid);
   const c2 = polar(target.angle, mid);

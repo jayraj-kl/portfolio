@@ -437,8 +437,8 @@ function Flow({
   }
 
   const layout = useMemo(
-    () => libraryLayout(maps, collapsed),
-    [maps, collapsed],
+    () => libraryLayout(maps, collapsed, selectedId),
+    [maps, collapsed, selectedId],
   );
 
   const motions = useMemo(() => {
@@ -609,13 +609,16 @@ function Flow({
       }
 
       // Fit inside the area the header leaves free. The overview also keeps room for map names.
+      // An opened branch is framed with its route back to the centre, clear of the details card.
+      const branch = active?.focusBounds ?? null;
       const inset = {
         top: (phone ? 16 : HEADER_INSET) + (active ? 0 : LABEL_HEIGHT),
         side: phone ? 16 : 48,
+        right: phone ? 16 : branch ? PANEL_INSET : 48,
         bottom: phone ? 24 : 40,
       };
-      const bounds = active ? active.bounds : layout.bounds;
-      const freeWidth = container.clientWidth - inset.side * 2;
+      const bounds = branch ?? (active ? active.bounds : layout.bounds);
+      const freeWidth = container.clientWidth - inset.side - inset.right;
       const freeHeight = container.clientHeight - inset.top - inset.bottom;
       const zoom = Math.min(
         MAX_ZOOM,
@@ -659,6 +662,19 @@ function Flow({
     return () => cancelAnimationFrame(request);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fly on map change only
   }, [activeMapId]);
+
+  // Opening or closing a topic swaps the ring for columns, so frame the new arrangement.
+  const branchKey = layout.clusters.some((c) => c.focusBounds)
+    ? selectedId
+    : null;
+  const lastBranchKey = useRef(branchKey);
+  useEffect(() => {
+    if (lastBranchKey.current === branchKey) return;
+    lastBranchKey.current = branchKey;
+    const request = requestAnimationFrame(() => frame(600));
+    return () => cancelAnimationFrame(request);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refit on branch change only
+  }, [branchKey]);
 
   // Declared after the framing effects above so that this flight is the one that wins.
   useEffect(() => {
@@ -723,6 +739,14 @@ function Flow({
   return (
     <CanvasActionsContext.Provider value={actions}>
       <div ref={containerRef} className="relative size-full overflow-hidden">
+        {/* The column view sits on a deep blue wash, so it reads as a different mode. */}
+        <div
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute inset-0 bg-blue-900/10 transition-opacity duration-500 dark:bg-blue-950/45",
+            branchKey ? "opacity-100" : "opacity-0",
+          )}
+        />
         <CursorWave />
         <ReactFlow
           nodes={nodes}
