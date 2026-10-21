@@ -18,12 +18,16 @@ import {
 
 import { useRef, useState } from "react";
 
+// href is optional: an item that only acts (a toggle) must not be a link, or a "#" placeholder
+// sends the page back to the top when it is clicked.
+type DockItem = { title: string; icon: React.ReactNode; href?: string };
+
 export const FloatingDock = ({
   items,
   desktopClassName,
   mobileClassName,
 }: {
-  items: { title: string; icon: React.ReactNode; href: string }[];
+  items: DockItem[];
   desktopClassName?: string;
   mobileClassName?: string;
 }) => {
@@ -39,7 +43,7 @@ const FloatingDockMobile = ({
   items,
   className,
 }: {
-  items: { title: string; icon: React.ReactNode; href: string }[];
+  items: DockItem[];
   className?: string;
 }) => {
   const [open, setOpen] = useState(false);
@@ -68,13 +72,22 @@ const FloatingDockMobile = ({
                 }}
                 transition={{ delay: (items.length - 1 - idx) * 0.05 }}
               >
-                <a
-                  href={item.href}
-                  key={item.title}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900"
-                >
-                  <div className="h-4 w-4">{item.icon}</div>
-                </a>
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    data-dock-item
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900"
+                  >
+                    <div className="h-4 w-4">{item.icon}</div>
+                  </a>
+                ) : (
+                  <span
+                    data-dock-item
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900"
+                  >
+                    <div className="h-4 w-4">{item.icon}</div>
+                  </span>
+                )}
               </motion.div>
             ))}
           </motion.div>
@@ -94,7 +107,7 @@ const FloatingDockDesktop = ({
   items,
   className,
 }: {
-  items: { title: string; icon: React.ReactNode; href: string }[];
+  items: DockItem[];
   className?: string;
 }) => {
   let mouseX = useMotionValue(Infinity);
@@ -123,7 +136,7 @@ function IconContainer({
   mouseX: MotionValue;
   title: string;
   icon: React.ReactNode;
-  href: string;
+  href?: string;
 }) {
   let ref = useRef<HTMLDivElement>(null);
 
@@ -167,8 +180,7 @@ function IconContainer({
 
   const [hovered, setHovered] = useState(false);
 
-  return (
-    <a href={href}>
+  const body = (
       <motion.div
         ref={ref}
         style={{ width, height }}
@@ -195,6 +207,13 @@ function IconContainer({
           {icon}
         </motion.div>
       </motion.div>
+  );
+
+  return href ? (
+    <a href={href} data-dock-item>
+      {body}
     </a>
+  ) : (
+    <span data-dock-item>{body}</span>
   );
 }

@@ -90,7 +90,7 @@ function TopicRow({
           onClick={() => props.onSelect(topic.id)}
           className={cn(
             "min-w-0 flex-1 py-2 text-left text-sm",
-            depth === 0 && "text-base font-semibold",
+            depth === 0 && "sm-display text-lg font-semibold",
             depth === 1 && "font-medium",
             p.status === "done" && !hasChildren && "text-muted-foreground",
           )}

@@ -78,7 +78,7 @@ function PanelBody({
           onChange={(event) =>
             actions.patchTopic(topic.id, { title: event.target.value })
           }
-          className="min-w-0 flex-1 rounded-md bg-transparent px-1 py-0.5 text-lg font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="min-w-0 flex-1 rounded-md bg-transparent px-1 py-0.5 sm-display text-xl font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
         />
         <button
           type="button"

@@ -1,15 +1,10 @@
-import { JetBrains_Mono } from "next/font/google";
 import "./learn.css";
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
-
+// The study maps share the home page's type, which the root layout sets.
 export default function LearnLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className={jetbrainsMono.variable}>{children}</div>;
+  return children;
 }

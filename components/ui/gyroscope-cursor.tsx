@@ -21,14 +21,17 @@ export function GyroscopeCursor({
   scopedPaths = {},
 }: {
   // Routes that bring their own pointer, mapped to the selector of the areas
-  // where this arrow should still take over.
+  // where this arrow should still take over. A path covers itself and the routes
+  // under it; "/" covers only the home page.
   scopedPaths?: Record<string, string>;
 }) {
   const pathname = usePathname();
+  const covers = (path: string) =>
+    path === "/"
+      ? pathname === "/"
+      : pathname === path || pathname.startsWith(`${path}/`);
   const zone =
-    Object.entries(scopedPaths).find(([path]) =>
-      pathname.startsWith(path),
-    )?.[1] ?? null;
+    Object.entries(scopedPaths).find(([path]) => covers(path))?.[1] ?? null;
   const [fine, setFine] = useState(false);
   const [visible, setVisible] = useState(false);
   const [pressed, setPressed] = useState(false);

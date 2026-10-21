@@ -1,0 +1,2021 @@
+/* The home page – Halftone White, after Miyoko: one narrow proof column on a hatched plate.
+   White paper, black ink, greys stepped from black, one red registration mark. Dark: the plate inverted. */
+
+:global(html):has(.root) {
+  background: #fff;
+  color-scheme: light;
+  scrollbar-color: #8a8a8a #fff;
+}
+
+:global(html.dark):has(.root) {
+  background: #0c0c0b;
+  color-scheme: dark;
+  scrollbar-color: #5a5a57 #0c0c0b;
+}
+
+.root {
+  --paper: #fff;
+  --paper-2: #f7f7f7;
+  --ink: #111;
+  --ink-soft: #2b2b2b;
+  --grey: #5c5c5c;
+  --grey-display: #8a8a8a;
+  --rule: #dadada;
+  --rule-strong: #bcbcbc;
+  --hatch: #d3d3d3;
+  --dot: #e2e2e2;
+  --reg: #e5322d;
+  /* Logos keep their own colours and width; this is their height and widest extent. */
+  /* Every logo gets the same slot, so the names beside them line up. */
+  --logo-h: 2.75rem;
+  --logo-w: 6.25rem;
+  --logo-plate: transparent;
+  --pad: clamp(16px, 4vw, 40px);
+  --box-pad: clamp(18px, 3vw, 28px);
+  /* yo-hackyfolio's 672px content width, plus the frame's own padding. */
+  --col: calc(42rem + 2 * var(--pad));
+  /* Corners inside the frame, as on yo-hackyfolio; the frame itself stays square. */
+  --r-card: 12px;
+  --r-ctl: 8px;
+  --r-chip: 6px;
+  --cols: minmax(10px, 1fr) minmax(0, var(--col)) minmax(10px, 1fr);
+
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--home-sans), ui-sans-serif, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+:global(.dark) .root {
+  --paper: #0c0c0b;
+  --paper-2: #151514;
+  --ink: #ecece6;
+  --ink-soft: #d0d0ca;
+  --grey: #a3a39d;
+  --grey-display: #7f7f7a;
+  --rule: #2a2a28;
+  --rule-strong: #474744;
+  --hatch: #2c2c2a;
+  --dot: #1f1f1e;
+  /* Most logos are dark ink on nothing, so in dark they sit on a white plate (as Miyoko's IEEE does). */
+  --logo-plate: #fff;
+}
+
+.root ::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.root :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* Resets at zero specificity, so every component rule below wins. */
+:where(.root) :where(p, h1, h2, h3, h4, ul, ol) {
+  margin: 0;
+}
+
+:where(.root) :where(ul, ol) {
+  list-style: none;
+  padding: 0;
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 60;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 10px 14px;
+}
+
+.skip:focus {
+  top: 12px;
+}
+
+/* ---------- The plate: rows, hatched gutters, registration marks ---------- */
+
+.row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  border-top: 1px solid var(--rule);
+}
+
+.gutter {
+  background-image: repeating-linear-gradient(-45deg, var(--hatch) 0 1px, transparent 1px 7px);
+}
+
+.cell {
+  position: relative;
+  min-width: 0;
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+section.row > .cell {
+  padding: clamp(40px, 5vw, 60px) var(--pad) clamp(40px, 5vw, 60px);
+}
+
+.cell::before,
+.cell::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  width: 7px;
+  height: 7px;
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  z-index: 3;
+}
+
+.cell::before {
+  left: -4px;
+}
+
+.cell::after {
+  right: -4px;
+}
+
+.regRed::before {
+  background: var(--reg);
+  border-color: var(--reg);
+}
+
+.topBand {
+  border-top: 0;
+}
+
+/* ---------- Type ---------- */
+
+.secLabel {
+  margin-bottom: 22px;
+  font-family: var(--home-sans), sans-serif;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.subLabel {
+  margin: 32px 0 12px;
+  font-family: var(--home-sans), sans-serif;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.miniLabel {
+  font-family: var(--home-mono), ui-monospace, monospace;
+  font-weight: 400;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.data {
+  font-family: var(--home-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.grey {
+  color: var(--grey);
+}
+
+.small {
+  color: var(--grey);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.h3 {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 500;
+  font-size: 1.3125rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.prose {
+  display: grid;
+  gap: 10px;
+  max-width: 65ch;
+}
+
+.link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--rule-strong);
+  transition: text-decoration-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+.arrow {
+  display: inline-block;
+  vertical-align: -1px;
+  margin-left: 3px;
+}
+
+.tag {
+  border-radius: var(--r-chip);
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid var(--rule-strong);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- Buttons ---------- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.actionsLeft {
+  justify-content: flex-start;
+}
+
+.btnPrimary,
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  border-radius: var(--r-ctl);
+  font: 500 1rem/1 var(--home-sans), sans-serif;
+  cursor: pointer;
+  transition:
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btnPrimary {
+  border-radius: var(--r-ctl);
+  overflow: hidden;
+  padding: 0;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+}
+
+.btnPrimary:hover {
+  background: color-mix(in srgb, var(--ink) 88%, var(--paper));
+}
+
+.btnAddr {
+  padding: 0 18px 0 20px;
+  letter-spacing: 0.005em;
+}
+
+.btnAct {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  min-width: 7.5rem;
+  justify-content: center;
+  padding: 0 18px;
+  border-left: 1px solid color-mix(in srgb, var(--paper) 30%, transparent);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.btnSecondary {
+  gap: 8px;
+  padding: 0 20px;
+  background: var(--paper-2);
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+  text-decoration: none;
+}
+
+.btnSecondary:hover {
+  border-color: var(--ink);
+  background: var(--paper);
+}
+
+.textBtn,
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.textBtn {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--rule-strong);
+}
+
+.textBtn:hover {
+  text-decoration-color: currentColor;
+}
+
+.toggle {
+  margin-top: 12px;
+  font-family: var(--home-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.toggle:hover {
+  color: var(--ink);
+}
+
+.toggle svg {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chevOpen {
+  transform: rotate(180deg);
+}
+
+/* ---------- Logos ---------- */
+
+/* Logos in their true colours, with no frame, each centred in a slot of one size. */
+.logo {
+  flex: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--logo-w);
+  height: var(--logo-h);
+  background: var(--logo-plate);
+}
+
+:global(.dark) .logo {
+  padding: 4px 6px;
+  border-radius: var(--r-chip);
+}
+
+.logo img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Stand-in until a logo file exists. */
+.monogram {
+  border-radius: var(--r-ctl);
+  flex: none;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: var(--logo-w);
+  height: var(--logo-h);
+  border: 1px solid var(--rule-strong);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  overflow: hidden;
+}
+
+.heroHost {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-image: radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 1.2px);
+  background-size: 14px 14px;
+  background-position: 7px 7px;
+}
+
+.heroText {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Under the portrait, whose shoulders it sits on. */
+  padding: clamp(20px, 2.4vw, 28px) var(--pad) clamp(44px, 5vw, 64px);
+  text-align: center;
+}
+
+.identity {
+  margin-bottom: clamp(22px, 2.2vw, 28px);
+}
+
+.identityName {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.identityLine {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 10px;
+  font-family: var(--home-mono), monospace;
+  font-size: 0.8125rem;
+  color: var(--grey);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fragment Mono has no IPA letters; the pronunciation takes a system mono that does, so no glyph falls back mid-word. */
+.ipa {
+  font-family: Consolas, Menlo, "DejaVu Sans Mono", "Liberation Mono", var(--home-mono), monospace;
+  font-size: 0.8125rem;
+}
+
+.h1 {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 500;
+  font-size: clamp(2rem, 1.25rem + 2.1vw, 2.875rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  max-width: 14em;
+}
+
+.h1Lead,
+.h1Follow {
+  display: block;
+  text-wrap: balance;
+}
+
+.h1Follow {
+  color: var(--grey-display);
+}
+
+.plate {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 52rem);
+  aspect-ratio: 16 / 9;
+  /* The portrait leads the hero; the plate's empty headroom is trimmed off its top. */
+  margin-top: calc(min(100%, 52rem) * -0.12);
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.readout {
+  border-radius: var(--r-chip);
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 4px 8px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.readoutKey {
+  color: var(--grey);
+  text-transform: uppercase;
+}
+
+.bandRow .cell::before,
+.bandRow .cell::after {
+  display: none;
+}
+
+.band {
+  height: 18px;
+  background-image: repeating-linear-gradient(-45deg, var(--hatch) 0 1px, transparent 1px 7px);
+}
+
+
+
+@media (max-width: 640px) {
+  /* Smaller logos on phones, so a wide wordmark doesn't squeeze the title beside it. */
+  .root {
+    --logo-h: 2rem;
+    --logo-w: 4.5rem;
+  }
+}
+
+/* ---------- Boxes (Miyoko's cards, squared) ---------- */
+
+.box {
+  border-radius: var(--r-card);
+  border: 1px solid var(--rule-strong);
+  padding: var(--box-pad);
+  background: var(--paper);
+}
+
+.leadHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.leadTitle {
+  display: grid;
+  gap: 2px;
+}
+
+.boxList {
+  border-radius: var(--r-card);
+  overflow: clip;
+  border: 1px solid var(--rule-strong);
+}
+
+.boxList > li + li {
+  border-top: 1px solid var(--rule);
+}
+
+/* A previous role: a row that opens the role's detail in a modal. */
+.prevSum {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto 16px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px var(--box-pad);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.prevSum:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+  border-radius: var(--r-ctl);
+}
+
+.prevSum:hover .prevOrg {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+
+.prevMain,
+.prevMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.prevMeta {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.prevOrg {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 500;
+  font-size: 1.0625rem;
+  line-height: 1.25;
+}
+
+.prevChev {
+  color: var(--grey);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.prevSum:hover .prevChev {
+  transform: translate(2px, -2px);
+}
+
+/* ---------- Previous roles: rows that unfold into a modal (after Aceternity's expandable card) ---------- */
+
+.roleRows {
+  display: grid;
+  gap: 4px;
+  margin: 0 calc(-1 * 12px);
+}
+
+.roleRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--r-card);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.roleRow:hover {
+  background: var(--paper-2);
+}
+
+.roleRow:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+.roleLogo {
+  display: inline-flex;
+}
+
+.roleWhen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.rolePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  font-family: var(--home-sans), sans-serif;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.roleRow:hover .rolePill,
+.rolePillSolid {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.roleLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.roleScrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+.roleModal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* One size for every role, whatever it holds; the text scrolls inside. */
+  width: min(100%, 500px);
+  height: min(560px, 90dvh);
+  overflow: hidden;
+  border-radius: 24px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 30px 80px -30px rgb(0 0 0 / 0.5);
+}
+
+.roleClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.roleClose:hover,
+.roleClose:focus-visible {
+  border-color: var(--ink);
+  outline: none;
+}
+
+/* The header: a white banner (the logos' own ground, in both themes) that the logo fills, or the
+   role's picture if it has one. */
+.roleHero {
+  position: relative;
+  flex: none;
+  height: 220px;
+  background: #fff;
+  border-bottom: 1px solid var(--rule);
+}
+
+.roleImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.roleLogoBig {
+  position: absolute;
+  inset: 36px 48px;
+  display: flex;
+  --logo-w: 100%;
+  --logo-h: 100%;
+}
+
+/* In the banner a logo grows to fill it, keeping its shape, however small its file. */
+.roleLogoBig img {
+  width: 100%;
+  height: 100%;
+}
+
+/* The banner is already the plate; the logo needs no plate of its own here. */
+.roleLogoBig > * {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* With a picture, the logo sits on it at the bottom left instead of filling the banner. */
+.roleImage + .roleLogoBig {
+  inset: auto auto 16px 16px;
+  --logo-h: 2.75rem;
+  --logo-w: 6.25rem;
+}
+
+.roleImage + .roleLogoBig > * {
+  padding: 4px 6px !important;
+  background: #fff !important;
+  border-radius: var(--r-chip);
+}
+
+.roleHead {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 0;
+}
+
+.roleOrg {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* The text scrolls and fades out at the bottom edge. */
+.roleBody {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 16px 20px 40px;
+  overflow: auto;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+}
+
+.roleBody::-webkit-scrollbar {
+  display: none;
+}
+
+.roleList {
+  display: grid;
+  gap: 8px;
+  padding-left: 1.1em;
+  list-style: disc;
+  color: var(--ink-soft);
+}
+
+.roleStack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.roleStack li {
+  padding: 3px 9px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-chip);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.75rem;
+}
+
+.roleLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.roleLinks a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 640px) {
+  /* On phones the rows stack their dates under the title, and the modal fills the screen. */
+  .roleRow {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .roleWhen {
+    grid-column: 2;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .rolePill {
+    display: none;
+  }
+
+  .roleLayer {
+    padding: 0;
+  }
+
+  .roleModal {
+    width: 100%;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .roleModal .rolePill {
+    display: inline-flex;
+  }
+}
+
+/* ---------- Tech stack ---------- */
+
+/* The carousel runs the column's full width and fades out at both edges. */
+.stackTrack {
+  padding: 6px 0 8px;
+  overflow: hidden;
+}
+
+.stackFade {
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+.stackRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+}
+
+.stackIcon,
+.stackMono {
+  display: block;
+  width: 30px;
+  height: 30px;
+}
+
+.stackMono {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-ctl);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.6875rem;
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 22px 20px;
+  margin-top: 18px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+
+.tools[hidden] {
+  display: none;
+}
+
+.toolCol ul {
+  margin-top: 10px;
+  display: grid;
+  gap: 3px;
+}
+
+/* ---------- Selected work (v2's card anatomy, in black and white) ---------- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter {
+  border-radius: var(--r-ctl);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter:hover {
+  border-color: var(--ink);
+}
+
+.filter[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.filterCount {
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.cards {
+  display: grid;
+  gap: 36px;
+  margin-top: 30px;
+}
+
+/* The column is wide now, so reading text keeps a comfortable measure. */
+.box p,
+.cardBody p {
+  max-width: 72ch;
+}
+
+.cardItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTabs {
+  display: flex;
+  margin-left: 18px;
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 1;
+}
+
+.cardTab {
+  padding: 4px 10px;
+  border: 1px solid var(--rule-strong);
+  border-bottom-color: var(--paper);
+  background: var(--paper);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cardTab:first-child {
+  border-top-left-radius: var(--r-chip);
+}
+
+.cardTab:last-child {
+  border-top-right-radius: var(--r-chip);
+}
+
+.cardTab:first-child {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.cardTabSlug {
+  margin-left: -1px;
+  color: var(--grey);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.card {
+  border-radius: var(--r-card);
+  overflow: clip;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.well {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid var(--rule);
+}
+
+.still {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+}
+
+.wellStill {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.wellVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--paper);
+  opacity: 0;
+  transition: opacity 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wellVideoOn {
+  opacity: 1;
+}
+
+.playBtn {
+  border-radius: var(--r-chip);
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--home-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.gallery {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  border-bottom: 1px solid var(--rule);
+}
+
+.gallery > li + li {
+  border-left: 1px solid var(--rule);
+}
+
+.galleryStill {
+  aspect-ratio: 16 / 10;
+}
+
+.cardBody {
+  padding: 22px var(--box-pad) 24px;
+}
+
+.cardName {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.cardTagline {
+  margin-top: 2px;
+  font-family: var(--home-display), sans-serif;
+  font-size: 1.0625rem;
+  color: var(--grey-display);
+}
+
+.cardWhat {
+  margin: 14px 0 8px;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 72px;
+  border-top: 1px solid var(--rule);
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 12px 16px 14px;
+  border-right: 1px solid var(--rule);
+  min-width: 0;
+}
+
+.field:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--rule);
+}
+
+.fieldLabel {
+  font-family: var(--home-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.fieldValue {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.arrowCell {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--paper);
+  transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+a.arrowCell:hover {
+  background: color-mix(in srgb, var(--ink) 85%, var(--paper));
+}
+
+a.arrowCell svg {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+a.arrowCell:hover svg {
+  transform: translateX(3px);
+}
+
+/* ---------- Publications ---------- */
+
+.stackList {
+  display: grid;
+  gap: 24px;
+}
+
+.figure {
+  /* The paper card has rounded corners; its figure fills the top edge. */
+  border-radius: calc(var(--r-card) - 1px) calc(var(--r-card) - 1px) 0 0;
+  overflow: clip;
+  aspect-ratio: 2 / 1;
+  width: auto;
+  margin: calc(-1 * var(--box-pad)) calc(-1 * var(--box-pad)) 22px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.pubHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.pubTitle {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 500;
+  font-size: 1.3125rem;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin-bottom: 6px;
+}
+
+.titleLink {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  text-decoration-color: var(--rule-strong);
+}
+
+.titleLink:hover {
+  text-decoration-color: currentColor;
+}
+
+.authors {
+  margin-top: 12px;
+  color: var(--grey);
+}
+
+.self {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.pubMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 14px 0 12px;
+}
+
+.expand {
+  max-height: 3.2em;
+  overflow: hidden;
+}
+
+.expandOpen {
+  max-height: none;
+}
+
+.expandFade {
+  mask-image: linear-gradient(#000 45%, transparent);
+}
+
+.pubLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 18px;
+}
+
+/* ---------- Quiet lists, education, graph ---------- */
+
+.quiet > li {
+  padding: 12px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.quiet > li:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.newsItem {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 16px;
+  align-items: baseline;
+}
+
+.edu {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.eduSide {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  text-align: right;
+  color: var(--grey);
+  max-width: 18rem;
+}
+
+.graph {
+  min-height: 132px;
+  overflow-x: auto;
+  color: var(--grey);
+  font-family: var(--home-mono), monospace;
+  font-size: 12px;
+  scrollbar-width: thin;
+}
+
+.graphFoot {
+  margin-top: 12px;
+  font-family: var(--home-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Get in touch ---------- */
+
+/* The text over the actions, which run the full width; the figure spans both rows on the
+   right, centred on the block, and sits behind the actions where the two overlap. */
+.close {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(200px, 34%, 230px);
+  align-items: center;
+  column-gap: 24px;
+}
+
+.closeText {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.closeActions {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  position: relative;
+  z-index: 1;
+}
+
+/* The stage keeps headroom above the ball for the lid to swing into, so the closed ball sits
+   in its lower part. --lift moves the stage up by that headroom, putting the ball on the
+   block's centre line; the lid opens into the space above. */
+.closeFig {
+  --lift: 29%;
+  --shift: -10%;
+  grid-column: 2;
+  grid-row: 1 / 3;
+  position: relative;
+  margin: 0;
+}
+
+.closeFig .closeStage {
+  translate: calc(-1 * var(--shift)) calc(-1 * var(--lift));
+}
+
+/* The figure's palette follows the page's paper and ink in both themes. */
+.closeStage {
+  --hairline-plate: var(--paper);
+  --hairline-hi: var(--ink);
+  width: 100%;
+}
+
+/* The figure's read-out: what is under the pointer, in a few characters. */
+@media (max-width: 640px) {
+  /* Stacked: text, the figure, then the actions. */
+  .close {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .closeFig {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+    width: min(100%, 300px);
+    margin-bottom: 16px;
+  }
+
+  .closeActions {
+    grid-row: 3;
+  }
+
+  /* Here the headroom would only be a gap under the text: take it out of the flow instead.
+     12% of the width is 15% of the 5:4 stage's height. */
+  .closeFig .closeStage {
+    translate: none;
+    margin-top: -12%;
+  }
+}
+
+.closeHead {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.625rem, 1.2rem + 1.4vw, 2.125rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.closeBody {
+  margin: 10px 0 24px;
+  max-width: 46ch;
+  color: var(--grey);
+}
+
+/* ---------- Footer (micro's sign-off, the "sss" CRT scene) ---------- */
+
+.siteFooter {
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.footTop {
+  padding: clamp(48px, 6vw, 88px) clamp(16px, 4vw, 48px) clamp(20px, 2.4vw, 28px);
+}
+
+.footHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.footName {
+  font-family: var(--home-display), sans-serif;
+  font-weight: 500;
+  font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.footAside {
+  font-family: var(--home-display), sans-serif;
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.375rem);
+  color: var(--grey);
+}
+
+.footMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-top: 12px;
+}
+
+.footLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+}
+
+.footLinks a,
+.footCopy {
+  font-family: var(--home-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.footLinks a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.footLinks a:hover {
+  text-decoration: underline;
+}
+
+.footCopy {
+  color: var(--grey);
+}
+
+/* The scene: full bleed, surfacing out of the paper, the wordmark in front. */
+.footScene {
+  --fade: clamp(120px, 13vw, 210px);
+  position: relative;
+  height: clamp(360px, 44vw, 680px);
+  overflow: hidden;
+  background: var(--paper);
+}
+
+/* Near the top only every scanline of the picture shows, thinly; lower down the gaps fill in.
+   The layers: a late full fade, unioned with scanline stripes that are themselves faded in. */
+.footMedia {
+  position: absolute;
+  inset: 0;
+  mask-image:
+    linear-gradient(to bottom, transparent calc(var(--fade) * 0.45), #000 var(--fade)),
+    repeating-linear-gradient(to bottom, #000 0 1.5px, transparent 1.5px 3px),
+    linear-gradient(to bottom, transparent 0, #000 calc(var(--fade) * 0.6));
+  mask-composite: add, intersect;
+  -webkit-mask-composite: source-over, source-in;
+}
+
+.footImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 62%;
+}
+
+/* The "sss" recipe's CRT surface: soft haze, scanlines, a vignette, and flickering grain. */
+.footImage:not(video) {
+  filter: blur(0.6px) saturate(1.12) contrast(1.04);
+}
+
+.footCrt {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.3) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 50% 55%, transparent 55%, rgb(0 0 0 / 0.35) 100%),
+    linear-gradient(rgb(255 236 214 / 0.06), rgb(255 236 214 / 0.06));
+}
+
+.footCrt::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+  animation: home-grain 0.6s steps(6) infinite;
+}
+
+@keyframes home-grain {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-7%, 4%);
+  }
+  40% {
+    transform: translate(5%, -6%);
+  }
+  60% {
+    transform: translate(-4%, -3%);
+  }
+  80% {
+    transform: translate(6%, 5%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footCrt::after {
+    animation: none;
+  }
+}
+
+.footWord {
+  position: absolute;
+  left: clamp(8px, 1.5vw, 24px);
+  right: clamp(8px, 1.5vw, 24px);
+  bottom: 0;
+  width: calc(100% - 2 * clamp(8px, 1.5vw, 24px));
+  height: auto;
+}
+
+.footWord text {
+  fill: var(--ink);
+  font-family: var(--home-display), sans-serif;
+  font-weight: 700;
+  font-size: 300px;
+}
+
+/* ---------- Dock (the site's FloatingDock, squared to the plate) ---------- */
+
+.dock {
+  position: fixed;
+  z-index: 50;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+}
+
+/* ---------- Notch: section navigation at the top ---------- */
+
+/* Centred with flex rather than a transform, which motion's enter animation would overwrite. */
+.notchHost {
+  position: fixed;
+  z-index: 60;
+  top: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.notchPop {
+  transform-origin: 50% 0;
+}
+
+.notch {
+  /* Positions the list while popLayout lifts it out of the flow on close. */
+  position: relative;
+  pointer-events: auto;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 10px 28px -14px rgb(0 0 0 / 0.45);
+}
+
+.notchOpen {
+  width: min(320px, calc(100vw - 24px));
+}
+
+.notchBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 16px 0 10px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: 500 0.875rem/1 var(--home-sans), sans-serif;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.notchOpen .notchBar {
+  width: 100%;
+}
+
+.notchBar:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: -5px;
+  border-radius: 999px;
+}
+
+.notchArc {
+  flex: none;
+}
+
+.notchArcTrack,
+.notchArcFill {
+  fill: none;
+  stroke-width: 2.5;
+}
+
+.notchArcTrack {
+  stroke: color-mix(in srgb, var(--paper) 22%, transparent);
+}
+
+.notchArcFill {
+  stroke: var(--paper);
+  stroke-linecap: round;
+}
+
+.notchLabel {
+  display: inline-block;
+}
+
+.notchList {
+  display: grid;
+  gap: 2px;
+  padding: 2px 8px 10px;
+}
+
+.notchLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  color: color-mix(in srgb, var(--paper) 66%, transparent);
+  font: 500 0.9375rem/1.2 var(--home-sans), sans-serif;
+  text-decoration: none;
+  transition:
+    background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notchLink:hover,
+.notchLink:focus-visible {
+  background: color-mix(in srgb, var(--paper) 10%, transparent);
+  color: var(--paper);
+  outline: none;
+}
+
+.notchLink[aria-current] {
+  color: var(--paper);
+}
+
+/* Marks the section you're in. */
+.notchDot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+}
+
+.notchLink[aria-current] .notchDot {
+  opacity: 1;
+}
+
+/* Sections land below the notch, and take focus after a jump without drawing a ring. */
+.row[id] {
+  scroll-margin-top: 64px;
+}
+
+.row[id]:focus,
+.root main:focus {
+  outline: none;
+}
+
+.dockPop {
+  position: relative;
+}
+
+/* A line of light runs once around the dock's edge as it lands. */
+@property --home-shine-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes home-dock-shine {
+  0% {
+    --home-shine-angle: 0deg;
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    --home-shine-angle: 360deg;
+    opacity: 0;
+  }
+}
+
+.dockShine {
+  border-radius: 9999px;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--home-shine-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--ink) 70%, transparent) 45deg,
+    transparent 95deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: home-dock-shine 1.5s ease-in-out 0.8s 1 both;
+}
+
+/* Reduced motion: sections rest in place, the dock appears without its shine. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .dockPop {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .dockShine {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.dock svg {
+  color: var(--ink);
+}
+
+.dock button {
+  border-radius: 9999px;
+}
+
+/* The liquid-metal rim around it is the dock's edge. */
+.dockDesktop {
+  border-radius: 9999px;
+  background: var(--paper);
+  border: 0;
+  box-shadow: none;
+}
+
+.dockDesktop [data-dock-item] > div {
+  border-radius: 9999px;
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  transition: border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dockDesktop [data-dock-item] > div:hover {
+  border-color: var(--ink);
+}
+
+.dockDesktop [data-dock-item] > div > div[class*="-top-8"] {
+  border-radius: var(--r-chip);
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--home-mono), monospace;
+  letter-spacing: 0.04em;
+}
+
+.dockMobile [data-dock-item],
+.dockMobile > button {
+  border-radius: 9999px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+}
+
+/* The phone dock's toggle sits inside the rim; its pop-up links keep their own edge. */
+.dockMobile > button {
+  border: 0;
+}
+
+/* Inside a LiquidMetalBorder the rim replaces the element's own border, and the element fills
+   the rim, so a rim stretched by a stacked layout never shows a block of bare metal. */
+.onMetal {
+  border: 0;
+  width: 100%;
+}
+
+.btnSecondary.onMetal {
+  justify-content: center;
+}
+
+.btnPrimary.onMetal .btnAddr {
+  flex: 1;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 767px) {
+  .dock {
+    left: auto;
+    right: 14px;
+    bottom: 14px;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .btnPrimary {
+    justify-content: space-between;
+  }
+
+  .btnAddr {
+    padding: 0 12px 0 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .btnAct {
+    min-width: 0;
+    padding: 0 14px;
+  }
+
+  .btnSecondary {
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  .actionsLeft {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .plate {
+    aspect-ratio: 16 / 10;
+    margin-top: -10%;
+  }
+
+  .heroText {
+    padding-top: 24px;
+  }
+
+  .h1 {
+    font-size: 1.875rem;
+  }
+
+  .identity {
+    margin-bottom: 18px;
+  }
+
+  .readout {
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .readoutKey {
+    display: none;
+  }
+
+  .cell::before,
+  .cell::after {
+    width: 5px;
+    height: 5px;
+    top: -3px;
+  }
+
+  .cell::before {
+    left: -3px;
+  }
+
+  .cell::after {
+    right: -3px;
+  }
+
+  .prevSum {
+    grid-template-columns: auto minmax(0, 1fr) 16px;
+    align-items: start;
+  }
+
+  .prevMeta {
+    grid-column: 2;
+    grid-row: 2;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .prevChev {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  /* The logo takes its own line, so the title gets the card's full width. */
+  .leadHead {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 52px;
+  }
+
+  .edu {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .eduSide {
+    grid-column: 2;
+    justify-items: start;
+    text-align: left;
+  }
+
+  .newsItem {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+/* not-found and error: one quiet column in the middle of the screen. */
+.fallback {
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 24px;
+  width: min(100%, var(--col));
+  margin-inline: auto;
+  padding: var(--pad);
+}

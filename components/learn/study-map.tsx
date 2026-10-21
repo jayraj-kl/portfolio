@@ -142,7 +142,7 @@ export function StudyMap() {
         <header className="sm-navbar relative z-20 border-b border-foreground/15 bg-background/55 backdrop-blur-md md:absolute md:inset-x-0 md:top-0">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-3 pb-2 md:px-6">
             <div className="flex min-w-0 items-baseline gap-3">
-              <h1 className="text-lg font-semibold tracking-tight whitespace-nowrap">
+              <h1 className="text-xl font-semibold whitespace-nowrap">
                 Study maps
               </h1>
               <Link
@@ -191,7 +191,7 @@ export function StudyMap() {
               >
                 Reset to sample
               </button>
-              <div className="size-8 p-1.5 text-muted-foreground hover:text-foreground">
+              <div className="grid size-9 place-items-center rounded-full border border-foreground/15 p-2 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground">
                 <AnimatedThemeToggler
                   aria-label="Switch between light and dark"
                   duration={ANIMATION_THEME_TOGGLER_DURATION}

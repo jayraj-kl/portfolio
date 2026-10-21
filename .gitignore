@@ -42,7 +42,9 @@ next-env.d.ts
 
 
 #
-.agents
+.agents/
+.claude/
+.impeccable/
 skills-lock.json
 
 # LaTeX build artifacts

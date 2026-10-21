@@ -26,7 +26,6 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { CursorWave } from "@/components/learn/cursor-wave";
 import {
   LinkPreview,
   type PreviewAnchor,
@@ -84,6 +83,7 @@ type CanvasActions = {
 const CanvasActionsContext = createContext<CanvasActions | null>(null);
 
 const PHONE_ZOOM = 0.65;
+// Floor for the zoom. The real limit is the zoom that frames every map.
 const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 1.75;
 // A small map is not blown up past this when it is framed.
@@ -132,6 +132,26 @@ function CenterHandles() {
         style={CENTER_HANDLE_STYLE}
       />
     </>
+  );
+}
+
+type Bounds = { x: number; y: number; width: number; height: number };
+
+// The space the header, the map names and the details card leave free.
+function frameInset(phone: boolean, labels: boolean, panel: boolean) {
+  return {
+    top: (phone ? 16 : HEADER_INSET) + (labels ? LABEL_HEIGHT : 0),
+    side: phone ? 16 : 48,
+    right: phone ? 16 : panel ? PANEL_INSET : 48,
+    bottom: phone ? 24 : 40,
+  };
+}
+
+function fitZoom(bounds: Bounds, freeWidth: number, freeHeight: number) {
+  return Math.min(
+    FIT_ZOOM,
+    freeWidth / bounds.width,
+    freeHeight / bounds.height,
   );
 }
 
@@ -185,7 +205,7 @@ function TopicNode({ id, data, selected }: NodeProps<TopicFlowNode>) {
                 className="sm-progress stroke-(--status-done)"
               />
             </svg>
-            <span className="relative text-[15px] leading-tight font-bold text-balance">
+            <span className="sm-display relative text-[15px] leading-tight font-semibold text-balance">
               {title}
             </span>
             <span className="relative mt-1.5 text-[11px] text-muted-foreground tabular-nums">
@@ -319,7 +339,7 @@ function LabelNode({ data }: NodeProps<LabelFlowNode>) {
             data.hidden && "pointer-events-none opacity-0",
           )}
         >
-          <span className="text-[15px] font-semibold">{data.title}</span>
+          <span className="sm-display text-[17px] font-semibold">{data.title}</span>
           <span className="text-xs text-muted-foreground tabular-nums">
             {data.progress.done} of {data.progress.total} studied
           </span>
@@ -405,8 +425,12 @@ function Flow({
   onActivate,
 }: MapCanvasProps) {
   const { resolvedTheme } = useTheme();
-  const { setViewport, setCenter } = useReactFlow();
+  const { setViewport, setCenter, getZoom } = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [viewSize, setViewSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   // The first paint cascades out from each centre; later additions only stagger among siblings.
   const [settled, setSettled] = useState(false);
@@ -440,6 +464,37 @@ function Flow({
     () => libraryLayout(maps, collapsed, selectedId),
     [maps, collapsed, selectedId],
   );
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(() =>
+      setViewSize({
+        width: container.clientWidth,
+        height: container.clientHeight,
+      }),
+    );
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  // Zooming out stops once every map is in view, the same framing as the overview.
+  const minZoom = useMemo(() => {
+    if (!viewSize) return MIN_ZOOM;
+    const phone = window.matchMedia("(max-width: 767px)").matches;
+    const inset = frameInset(phone, true, false);
+    return Math.min(
+      MAX_ZOOM,
+      Math.max(
+        MIN_ZOOM,
+        fitZoom(
+          layout.bounds,
+          viewSize.width - inset.side - inset.right,
+          viewSize.height - inset.top - inset.bottom,
+        ),
+      ),
+    );
+  }, [layout.bounds, viewSize]);
 
   const motions = useMemo(() => {
     const result = new Map<string, Motion>();
@@ -611,25 +666,13 @@ function Flow({
       // Fit inside the area the header leaves free. The overview also keeps room for map names.
       // An opened branch is framed with its route back to the centre, clear of the details card.
       const branch = active?.focusBounds ?? null;
-      const inset = {
-        top: (phone ? 16 : HEADER_INSET) + (active ? 0 : LABEL_HEIGHT),
-        side: phone ? 16 : 48,
-        right: phone ? 16 : branch ? PANEL_INSET : 48,
-        bottom: phone ? 24 : 40,
-      };
+      const inset = frameInset(phone, !active, branch !== null);
       const bounds = branch ?? (active ? active.bounds : layout.bounds);
       const freeWidth = container.clientWidth - inset.side - inset.right;
       const freeHeight = container.clientHeight - inset.top - inset.bottom;
       const zoom = Math.min(
         MAX_ZOOM,
-        Math.max(
-          MIN_ZOOM,
-          Math.min(
-            FIT_ZOOM,
-            freeWidth / bounds.width,
-            freeHeight / bounds.height,
-          ),
-        ),
+        Math.max(minZoom, fitZoom(bounds, freeWidth, freeHeight)),
       );
       void setViewport(
         {
@@ -646,8 +689,16 @@ function Flow({
         { duration },
       );
     },
-    [setViewport, setCenter, layout, activeMapId],
+    [setViewport, setCenter, layout, activeMapId, minZoom],
   );
+
+  // A larger window raises the limit, which can leave the view further out than it allows.
+  useEffect(() => {
+    if (getZoom() >= minZoom) return;
+    const request = requestAnimationFrame(() => frame(200));
+    return () => cancelAnimationFrame(request);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refit on limit change only
+  }, [minZoom]);
 
   // Reframe quickly when topics change, and with a longer flight when the open map changes.
   const visibleCount = nodes.length;
@@ -738,16 +789,16 @@ function Flow({
 
   return (
     <CanvasActionsContext.Provider value={actions}>
-      <div ref={containerRef} className="relative size-full overflow-hidden">
-        {/* The column view sits on a deep blue wash, so it reads as a different mode. */}
+      {/* The home page's dot grid is the ground every map sits on. */}
+      <div ref={containerRef} className="sm-dots relative size-full overflow-hidden">
+        {/* The column view sits on a faint ink wash, so it reads as a different mode. */}
         <div
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-0 bg-blue-900/10 transition-opacity duration-500 dark:bg-blue-950/45",
+            "pointer-events-none absolute inset-0 bg-foreground/[0.04] transition-opacity duration-500",
             branchKey ? "opacity-100" : "opacity-0",
           )}
         />
-        <CursorWave />
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -770,7 +821,7 @@ function Flow({
           onNodeMouseLeave={() => setHoveredId(null)}
           onPaneClick={() => onSelect(null)}
           onMoveStart={() => setPreview(null)}
-          minZoom={MIN_ZOOM}
+          minZoom={minZoom}
           maxZoom={MAX_ZOOM}
           proOptions={{ hideAttribution: true }}
           style={{ background: "transparent" }}

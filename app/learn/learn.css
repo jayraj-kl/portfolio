@@ -1,24 +1,110 @@
+/* The study maps wear the home page's theme. These tokens mirror .root in
+   components/home/home.module.css; keep the two in step. */
 .study-map {
+  --paper: #fff;
+  --paper-2: #f7f7f7;
+  --ink: #111;
+  --ink-soft: #2b2b2b;
+  --grey: #5c5c5c;
+  --grey-display: #8a8a8a;
+  --rule: #dadada;
+  --rule-strong: #bcbcbc;
+  --hatch: #d3d3d3;
+  --dot: #e2e2e2;
+  --r-card: 12px;
+  --r-ctl: 8px;
+  --r-chip: 6px;
+
+  /* The theme tokens the components' utility classes read, pointed at paper and ink. */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-2);
+  --muted-foreground: var(--grey);
+  --accent: var(--paper-2);
+  --accent-foreground: var(--ink);
+  --border: var(--rule);
+  --input: var(--rule-strong);
+  --ring: var(--ink);
+
+  /* Status keeps its colours: it is information, not decoration. */
   --status-done: oklch(0.58 0.12 165);
   --status-doing: oklch(0.66 0.15 65);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --box-line: color-mix(in oklab, var(--foreground) 45%, transparent);
-  --box-shadow: color-mix(in oklab, var(--foreground) 22%, transparent);
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --box-line: var(--rule-strong);
+  --lift: 0 18px 50px -24px rgb(0 0 0 / 0.35);
+
+  font-family: var(--home-sans), ui-sans-serif, sans-serif;
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
 }
 
 .dark .study-map {
+  --paper: #0c0c0b;
+  --paper-2: #151514;
+  --ink: #ecece6;
+  --ink-soft: #d0d0ca;
+  --grey: #a3a39d;
+  --grey-display: #7f7f7a;
+  --rule: #2a2a28;
+  --rule-strong: #474744;
+  --hatch: #2c2c2a;
+  --dot: #1f1f1e;
   --status-done: oklch(0.78 0.13 165);
   --status-doing: oklch(0.82 0.14 80);
+  --lift: 0 18px 50px -20px rgb(0 0 0 / 0.7);
 }
 
-/* Every corner on this page is square. */
-.study-map,
-.study-map *,
-.study-map *::before,
-.study-map *::after {
-  border-radius: 0 !important;
+.study-map ::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Type at the home page's extremes: Funnel Display for names, Fragment Mono for every count. */
+.study-map h1,
+.study-map .sm-display {
+  font-family: var(--home-display), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.study-map .tabular-nums,
+.study-map .font-mono {
+  font-family: var(--home-mono), ui-monospace, monospace;
+}
+
+/* The home page's corners: 8px on controls, 12px on cards. */
+.study-map button,
+.study-map input,
+.study-map textarea,
+.study-map select,
+.study-map [role="group"] {
+  border-radius: var(--r-ctl);
+}
+
+/* The map's ground: the dot grid behind the home page's hero. */
+.study-map .sm-dots {
+  background-image: radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 1.2px);
+  background-size: 14px 14px;
+  background-position: 7px 7px;
+}
+
+/* The header ends on the hatched band that separates rows on the home page. */
+.study-map .sm-navbar::after {
+  position: absolute;
+  inset: auto 0 -9px;
+  height: 8px;
+  border-bottom: 1px solid var(--rule);
+  background-image: repeating-linear-gradient(-45deg, var(--hatch) 0 1px, transparent 1px 7px);
+  content: "";
+  pointer-events: none;
 }
 
 /* The ring cursor stands in for the pointer wherever it is active. */
@@ -35,7 +121,7 @@
     opacity 180ms ease,
     background-color 150ms ease,
     color 150ms ease,
-    box-shadow 140ms var(--ease-out),
+    box-shadow 160ms var(--ease-out),
     border-color 250ms ease;
 }
 
@@ -48,17 +134,24 @@
 }
 
 .study-map .sm-appear {
+  border-radius: 50%;
+
   @starting-style {
     opacity: 0;
     scale: 0.85;
   }
 }
 
-/* Solid box: hard border, an inner line, and an offset shadow it sinks into when pressed. */
+/* A topic: a rounded card with a hairline, and an inner line that carries its status. */
 .study-map .sm-box {
   --tone: color-mix(in oklab, var(--foreground) 60%, transparent);
   border: 1px solid var(--box-line);
-  box-shadow: 3px 3px 0 0 var(--box-shadow);
+  border-radius: var(--r-ctl);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+
+.study-map .sm-box:hover {
+  border-color: var(--ink);
 }
 
 .study-map .sm-box[data-status="doing"] {
@@ -70,11 +163,12 @@
   border-color: color-mix(in oklab, var(--status-done) 75%, transparent);
 }
 
-/* The inner line also carries status: dotted, dashed, then solid. */
+/* The inner line: dotted to study, dashed in progress, solid studied. */
 .study-map .sm-box::before {
   position: absolute;
   inset: 2px;
   border: 1px dotted color-mix(in oklab, var(--tone) 65%, transparent);
+  border-radius: calc(var(--r-ctl) - 2px);
   content: "";
   pointer-events: none;
 }
@@ -89,30 +183,56 @@
 
 .study-map .sm-box[data-selected="true"] {
   border-color: var(--tone);
-  box-shadow: 3px 3px 0 0 var(--tone);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--tone) 22%, transparent);
 }
 
-.study-map .sm-box.sm-press:active {
-  box-shadow: 1px 1px 0 0 var(--box-shadow);
-  transform: translate(2px, 2px);
-}
-
+/* A map's centre: a card at the home page's 12px, lifted a little. */
 .study-map .sm-box-root {
-  border-color: color-mix(in oklab, var(--foreground) 25%, transparent);
-  box-shadow: 5px 5px 0 0 var(--box-shadow);
+  border-color: var(--rule-strong);
+  border-radius: var(--r-card);
+  box-shadow: var(--lift);
 }
 
 .study-map .sm-box-root::before {
   inset: 6px;
+  border-radius: calc(var(--r-card) - 6px);
 }
 
 .study-map .sm-box-root[data-selected="true"] {
-  box-shadow: 5px 5px 0 0 var(--tone);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--tone) 22%, transparent),
+    var(--lift);
 }
 
-.study-map .sm-chip[aria-pressed="true"],
+/* The map chips: the home page's filter tabs. */
+.study-map .sm-chip {
+  border-radius: var(--r-ctl);
+}
+
+/* The details panel: a card like the home page's role modal. */
 .study-map .sm-panel {
-  box-shadow: 4px 4px 0 0 var(--box-shadow);
+  border-radius: 16px;
+  box-shadow: var(--lift);
+}
+
+/* The zoom controls: hairline buttons on paper. */
+.study-map .react-flow__controls {
+  overflow: hidden;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-ctl);
+  box-shadow: none;
+}
+
+.study-map .react-flow__controls-button {
+  border-radius: 0;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+  fill: var(--ink);
+}
+
+.study-map .react-flow__controls-button:hover {
+  background: var(--paper-2);
 }
 
 /* Topics glide to their new place when a branch opens or closes. */
@@ -290,10 +410,11 @@
   }
 }
 
-/* Link preview card and search results. */
+/* Link preview card and search results: soft cards like the rest of the site. */
 .study-map .sm-preview,
 .study-map .sm-search-results {
-  box-shadow: 4px 4px 0 0 var(--box-shadow);
+  border-radius: var(--r-card);
+  box-shadow: var(--lift);
 }
 
 .study-map .sm-preview {

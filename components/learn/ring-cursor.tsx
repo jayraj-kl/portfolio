@@ -54,6 +54,7 @@ export function RingCursor({ scope }: { scope: string }) {
 
     let pointer = { x: 0, y: 0 };
     let target: Element | null = null;
+    let targetRadius = 0;
     let frame = 0;
 
     // Runs every frame while locked, so the ring stays on a target that moves under it.
@@ -66,7 +67,8 @@ export function RingCursor({ scope }: { scope: string }) {
         y.set(rect.top + rect.height / 2);
         width.set(rect.width + TARGET_PADDING * 2);
         height.set(rect.height + TARGET_PADDING * 2);
-        radius.set(0);
+        // Follow the target's own corners, widened by the gap around it.
+        radius.set(targetRadius ? targetRadius + TARGET_PADDING : 0);
         frame = requestAnimationFrame(follow);
       } else {
         x.set(pointer.x);
@@ -86,8 +88,14 @@ export function RingCursor({ scope }: { scope: string }) {
       const hit = event.target instanceof Element ? event.target : null;
       // Over these areas the site's arrow cursor takes over, so the ring steps aside.
       const yielded = hit?.closest(ARROW_ZONE) != null;
-      target =
+      const next =
         hit && !yielded && root.contains(hit) ? hit.closest(TARGETS) : null;
+      if (next !== target) {
+        target = next;
+        targetRadius = target
+          ? parseFloat(getComputedStyle(target).borderTopLeftRadius) || 0
+          : 0;
+      }
       setVisible(!yielded);
       if (!frame) follow();
     };
