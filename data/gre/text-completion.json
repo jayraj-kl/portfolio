@@ -1,0 +1,1198 @@
+{
+  "textCompletion": {
+    "supportWords": [
+      {
+        "id": "since-1",
+        "word": "since",
+        "sentence": "I started exercising regularly since it improves my health.",
+        "idea1": "I started exercising regularly",
+        "idea2": "it improves my health"
+      },
+      {
+        "id": "that-2",
+        "word": "that",
+        "sentence": "He was so exhausted that he fell asleep immediately.",
+        "idea1": "He was so exhausted",
+        "idea2": "he fell asleep immediately"
+      },
+      {
+        "id": "as-3",
+        "word": "as",
+        "sentence": "He couldn’t come to the party as he was feeling unwell.",
+        "idea1": "He was feeling unwell",
+        "idea2": "he couldn’t come to the party"
+      },
+      {
+        "id": "by-4",
+        "word": "by",
+        "sentence": "By studying hard, she was able to pass the exam.",
+        "idea1": "studying hard",
+        "idea2": "she was able to pass the exam"
+      },
+      {
+        "id": "and-5",
+        "word": "and",
+        "sentence": "She is an excellent musician and a talented artist.",
+        "idea1": "She is an excellent musician",
+        "idea2": "a talented artist"
+      },
+      {
+        "id": "also-6",
+        "word": "also",
+        "sentence": "He is a talented musician. Also, he is an excellent cook.",
+        "idea1": "He is a talented musician",
+        "idea2": "he is an excellent cook"
+      },
+      {
+        "id": "moreover-7",
+        "word": "moreover",
+        "sentence": "The proposal is costly. Moreover, it is impractical.",
+        "idea1": "The proposal is costly",
+        "idea2": "it is impractical"
+      },
+      {
+        "id": "likewise-8",
+        "word": "likewise",
+        "sentence": "She enjoys hiking; likewise, her brother is an outdoor enthusiast.",
+        "idea1": "She enjoys hiking",
+        "idea2": "her brother is an outdoor enthusiast"
+      },
+      {
+        "id": "equally-9",
+        "word": "equally",
+        "sentence": "Her chemistry teacher is strict; her biology teacher is equally demanding.",
+        "idea1": "Her chemistry teacher is strict",
+        "idea2": "her biology teacher is equally demanding"
+      },
+      {
+        "id": "for-10",
+        "word": "for",
+        "sentence": "She took an umbrella for it looked like rain.",
+        "idea1": "She took an umbrella",
+        "idea2": "it looked like rain"
+      },
+      {
+        "id": "when-11",
+        "word": "when",
+        "sentence": "When you eat right and exercise three times a week, your health is bound to improve.",
+        "idea1": "you eat right and exercise three times a week",
+        "idea2": "your health is bound to improve"
+      },
+      {
+        "id": "because-12",
+        "word": "because",
+        "sentence": "I love pizza because it is great.",
+        "idea1": "I love pizza",
+        "idea2": "it is great"
+      },
+      {
+        "id": "thus-13",
+        "word": "thus",
+        "sentence": "The experiment failed; thus, we need to reconsider our approach.",
+        "idea1": "The experiment failed",
+        "idea2": "we need to reconsider our approach"
+      },
+      {
+        "id": "through-14",
+        "word": "through",
+        "sentence": "He was able to overcome his fears through beneficial therapy sessions.",
+        "idea1": "He was able to overcome his fears",
+        "idea2": "beneficial therapy sessions"
+      },
+      {
+        "id": "if-15",
+        "word": "if",
+        "sentence": "If you invest your money each month, you’ll likely be rich in retirement.",
+        "idea1": "you invest your money each month",
+        "idea2": "you’ll likely be rich in retirement"
+      },
+      {
+        "id": "which-16",
+        "word": "which",
+        "sentence": "He avoided unhealthy habits, which led to a healthy and productive life.",
+        "idea1": "He avoided unhealthy habits",
+        "idea2": "led to a healthy and productive life"
+      },
+      {
+        "id": "given-17",
+        "word": "given",
+        "sentence": "Given his expertise, he was the perfect candidate for the job.",
+        "idea1": "his expertise",
+        "idea2": "he was the perfect candidate for the job"
+      },
+      {
+        "id": "with-18",
+        "word": "with",
+        "sentence": "With determination and effort, they achieved their goals.",
+        "idea1": "determination and effort",
+        "idea2": "they achieved their goals"
+      },
+      {
+        "id": "whereby-18",
+        "word": "whereby",
+        "sentence": "They developed an efficient workflow, whereby productivity increased.",
+        "idea1": "They developed an efficient workflow",
+        "idea2": "productivity increased"
+      },
+      {
+        "id": "therefore-19",
+        "word": "therefore",
+        "sentence": "It started raining; therefore, we canceled the picnic.",
+        "idea1": "It started raining",
+        "idea2": "we canceled the picnic"
+      },
+      {
+        "id": "indeed-20",
+        "word": "indeed",
+        "sentence": "The food was delicious; indeed, it was all gone in less than an hour.",
+        "idea1": "The food was delicious",
+        "idea2": "it was all gone in less than an hour"
+      },
+      {
+        "id": "then-21",
+        "word": "then",
+        "sentence": "John exerted much effort in improving his grades. He then graduated with honors.",
+        "idea1": "John exerted much effort in improving his grades",
+        "idea2": "He graduated with honors"
+      },
+      {
+        "id": "who-22",
+        "word": "who",
+        "sentence": "The company is looking to promote an individual who exudes excellence.",
+        "idea1": "The company is looking to promote an individual",
+        "idea2": "exudes excellence"
+      },
+      {
+        "id": "in-23",
+        "word": "in",
+        "sentence": "In problematic instances such as these, it's important we assess the damage.",
+        "idea1": "problematic instances such as these",
+        "idea2": "it's important we assess the damage"
+      },
+      {
+        "id": "so-24",
+        "word": "so",
+        "sentence": "He trained hard, so he won the race.",
+        "idea1": "He trained hard",
+        "idea2": "he won the race"
+      },
+      {
+        "id": "like-similarity-25",
+        "word": "like (similarity)",
+        "sentence": "Like a peaceful lake on a beautiful day, her mind was calm.",
+        "idea1": "a peaceful lake on a beautiful day",
+        "idea2": "her mind was calm"
+      },
+      {
+        "id": "like-examples-26",
+        "word": "like (examples)",
+        "sentence": "Let's look at the successful cases, like the strongest tech companies.",
+        "idea1": "Let's look at the successful cases",
+        "idea2": "the strongest tech companies"
+      },
+      {
+        "id": "after-27",
+        "word": "after",
+        "sentence": "We celebrated after finishing the project successfully.",
+        "idea1": "finishing the project successfully",
+        "idea2": "We celebrated"
+      },
+      {
+        "id": "whose-28",
+        "word": "whose",
+        "sentence": "Let's recruit the successful people whose proven track records can help our firm.",
+        "idea1": "Let's recruit the successful people",
+        "idea2": "proven track records can help our firm"
+      },
+      {
+        "id": "where-29",
+        "word": "where",
+        "sentence": "We found ourselves in a difficult situation where communication broke down.",
+        "idea1": "We found ourselves in a difficult situation",
+        "idea2": "communication broke down"
+      },
+      {
+        "id": "seems-30",
+        "word": "seems",
+        "sentence": "The community garden initiative seems poised to bring joy.",
+        "idea1": "The community garden initiative",
+        "idea2": "poised to bring joy"
+      },
+      {
+        "id": "to-be-31",
+        "word": "to be words (is, was, are, etc)",
+        "sentence": "The abandoned factory is a breeding ground for unsafe conditions.",
+        "idea1": "The abandoned factory",
+        "idea2": "a breeding ground for unsafe conditions"
+      }
+    ],
+    "supportPunctuation": [
+      {
+        "id": "period-1",
+        "word": "period .",
+        "sentence": "The festival was a tremendous success. It attracted thousands of visitors and boosted local morale.",
+        "idea1": "The festival was a tremendous success",
+        "idea2": "It attracted thousands of visitors and boosted local morale"
+      },
+      {
+        "id": "semi-colon-2",
+        "word": "semi-colon ;",
+        "sentence": "The team worked late into the night; they were determined to finish the project.",
+        "idea1": "The team worked late into the night",
+        "idea2": "they were determined to finish the project"
+      },
+      {
+        "id": "colon-3",
+        "word": "colon :",
+        "sentence": "She has many talents: she is a skilled pianist and an excellent painter.",
+        "idea1": "She has many talents",
+        "idea2": "she is a skilled pianist and an excellent painter"
+      },
+      {
+        "id": "comma-4",
+        "word": "comma ,",
+        "sentence": "The charity event was a huge success, bringing in donations and raising awareness.",
+        "idea1": "The charity event was a huge success",
+        "idea2": "bringing in donations and raising awareness"
+      },
+      {
+        "id": "dash-5",
+        "word": "dash --",
+        "sentence": "The neglected park—filled with litter and overgrown weeds—was a sad sight.",
+        "idea1": "The neglected park",
+        "idea2": "filled with litter and overgrown weeds"
+      },
+      {
+        "id": "parentheses-6",
+        "word": "parentheses ()",
+        "sentence": "The dilapidated building (with its broken windows and graffiti-covered walls) was an eyesore in the neighborhood.",
+        "idea1": "The dilapidated building",
+        "idea2": "with its broken windows and graffiti-covered walls"
+      }
+    ],
+    "contrastWords": [
+      {
+        "id": "but-1",
+        "word": "but",
+        "sentence": "The presentation was informative but overly long and tedious.",
+        "idea1": "The presentation was informative",
+        "idea2": "overly long and tedious"
+      },
+      {
+        "id": "despite-2",
+        "word": "despite",
+        "sentence": "Despite the rain, the outdoor concert was a huge success.",
+        "idea1": "the rain",
+        "idea2": "the outdoor concert was a huge success"
+      },
+      {
+        "id": "though-3",
+        "word": "though",
+        "sentence": "He is highly skilled though often unreliable.",
+        "idea1": "He is highly skilled",
+        "idea2": "often unreliable"
+      },
+      {
+        "id": "yet-4",
+        "word": "yet",
+        "sentence": "The book was boring yet incredibly insightful in its final chapters.",
+        "idea1": "The book was boring",
+        "idea2": "incredibly insightful in its final chapters"
+      },
+      {
+        "id": "unless-5",
+        "word": "unless",
+        "sentence": "The project will fail unless everyone commits to working together.",
+        "idea1": "The project will fail",
+        "idea2": "everyone commits to working together"
+      },
+      {
+        "id": "although-6",
+        "word": "although",
+        "sentence": "Although she is very talented, she lacks experience.",
+        "idea1": "she is very talented",
+        "idea2": "she lacks experience"
+      },
+      {
+        "id": "however-7",
+        "word": "however",
+        "sentence": "The trip was exhausting; however, the experiences were unforgettable.",
+        "idea1": "The trip was exhausting",
+        "idea2": "the experiences were unforgettable"
+      },
+      {
+        "id": "rather-8",
+        "word": "rather",
+        "sentence": "She chose to rest rather than finish the assignment.",
+        "idea1": "She chose to rest",
+        "idea2": "finish the assignment"
+      },
+      {
+        "id": "instead-9",
+        "word": "instead",
+        "sentence": "He was supposed to study; instead, he watched movies all night.",
+        "idea1": "He was supposed to study",
+        "idea2": "he watched movies all night"
+      },
+      {
+        "id": "unlike-10",
+        "word": "unlike",
+        "sentence": "Unlike his sister, who is diligent, he tends to procrastinate.",
+        "idea1": "his sister, who is diligent",
+        "idea2": "he tends to procrastinate"
+      },
+      {
+        "id": "even-with-11",
+        "word": "even with",
+        "sentence": "Even with her busy schedule, she managed to excel in her studies.",
+        "idea1": "her busy schedule",
+        "idea2": "she managed to excel in her studies"
+      },
+      {
+        "id": "even-though-12",
+        "word": "even though",
+        "sentence": "Even though the weather was terrible, we had a wonderful time.",
+        "idea1": "the weather was terrible",
+        "idea2": "we had a wonderful time"
+      },
+      {
+        "id": "even-as-13",
+        "word": "even as",
+        "sentence": "Even as he struggled, he remained optimistic.",
+        "idea1": "he struggled",
+        "idea2": "he remained optimistic"
+      },
+      {
+        "id": "even-in-14",
+        "word": "even in",
+        "sentence": "Even in difficult times, she found reasons to smile.",
+        "idea1": "difficult times",
+        "idea2": "she found reasons to smile"
+      },
+      {
+        "id": "even-if-15",
+        "word": "even if",
+        "sentence": "She plans to attend the event even if she feels unwell.",
+        "idea1": "She plans to attend the event",
+        "idea2": "she feels unwell"
+      },
+      {
+        "id": "than-16",
+        "word": "than",
+        "sentence": "The new software is more user-friendly than its outdated predecessor.",
+        "idea1": "The new software is more user-friendly",
+        "idea2": "its outdated predecessor"
+      },
+      {
+        "id": "even-when-17",
+        "word": "even when",
+        "sentence": "She stays calm even when faced with challenges.",
+        "idea1": "She stays calm",
+        "idea2": "faced with challenges"
+      },
+      {
+        "id": "whatever-18",
+        "word": "whatever",
+        "sentence": "Whatever criticisms you throw at us, we will stay positive.",
+        "idea1": "criticisms you throw at us",
+        "idea2": "we will stay positive"
+      },
+      {
+        "id": "regardless-of-19",
+        "word": "regardless (of)",
+        "sentence": "Regardless of the obstacles, they achieved their goal.",
+        "idea1": "the obstacles",
+        "idea2": "they achieved their goal"
+      },
+      {
+        "id": "without-20",
+        "word": "without",
+        "sentence": "Without his guidance, the team felt lost.",
+        "idea1": "his guidance",
+        "idea2": "the team felt lost"
+      },
+      {
+        "id": "notwithstanding-21",
+        "word": "notwithstanding",
+        "sentence": "Notwithstanding the difficulties, they completed the project on time.",
+        "idea1": "the difficulties",
+        "idea2": "they completed the project on time"
+      },
+      {
+        "id": "nevertheless-22",
+        "word": "nevertheless",
+        "sentence": "The task was daunting; nevertheless, they succeeded.",
+        "idea1": "The task was daunting",
+        "idea2": "they succeeded"
+      },
+      {
+        "id": "while-23",
+        "word": "while",
+        "sentence": "The product is high-quality while the customer service is lacking.",
+        "idea1": "The product is high-quality",
+        "idea2": "the customer service is lacking"
+      },
+      {
+        "id": "began-24",
+        "word": "began",
+        "sentence": "Her mother's coldness towards her husband began to decrease as they got to know each other.",
+        "idea1": "Her mother's coldness towards her husband",
+        "idea2": "to decrease as they got to know each other"
+      },
+      {
+        "id": "actually-25",
+        "word": "actually",
+        "sentence": "She is actually a brilliant scientist, not just a good teacher.",
+        "idea1": "She is a brilliant scientist",
+        "idea2": "a good teacher"
+      }
+    ],
+    "supportPhrases": [
+      {
+        "id": "not-only-but-also-1",
+        "word": "not only...but also",
+        "sentence": "She is not only a brilliant scientist but also a compassionate mentor.",
+        "idea1": "She is a brilliant scientist",
+        "idea2": "a compassionate mentor"
+      },
+      {
+        "id": "in-addition-2",
+        "word": "in addition",
+        "sentence": "The team received praise for their innovation; in addition, they were awarded a substantial bonus.",
+        "idea1": "The team received praise for their innovation",
+        "idea2": "they were awarded a substantial bonus"
+      },
+      {
+        "id": "for-this-reason-3",
+        "word": "for this reason",
+        "sentence": "The weather was severe; for this reason, the event was canceled.",
+        "idea1": "The weather was severe",
+        "idea2": "the event was canceled"
+      },
+      {
+        "id": "the-more-the-more-4",
+        "word": "the more (adjective), the more (adjective)",
+        "sentence": "The more diligent you are, the more successful you will become.",
+        "idea1": "The more diligent you are",
+        "idea2": "the more successful you will become"
+      },
+      {
+        "id": "serves-to-5",
+        "word": "serves to",
+        "sentence": "His dedication serves to inspire others to work harder.",
+        "idea1": "His dedication",
+        "idea2": "inspire others to work harder"
+      },
+      {
+        "id": "as-well-as-6",
+        "word": "as well as",
+        "sentence": "She excels in mathematics as well as dominates the basketball court.",
+        "idea1": "She excels in mathematics",
+        "idea2": "dominates the basketball court"
+      },
+      {
+        "id": "so-that-7",
+        "word": "so...that",
+        "sentence": "The movie was so captivating that everyone was on the edge of their seats.",
+        "idea1": "The movie was so captivating",
+        "idea2": "everyone was on the edge of their seats"
+      },
+      {
+        "id": "if-only-8",
+        "word": "if only",
+        "sentence": "If only he had studied harder, he would have passed the exam.",
+        "idea1": "he had studied harder",
+        "idea2": "he would have passed the exam"
+      },
+      {
+        "id": "only-by-9",
+        "word": "only by",
+        "sentence": "Only by working together can we achieve our goals.",
+        "idea1": "working together",
+        "idea2": "we achieve our goals"
+      },
+      {
+        "id": "resulting-from-10",
+        "word": "resulting from",
+        "sentence": "The confusion resulting from the miscommunication caused delays.",
+        "idea1": "The confusion",
+        "idea2": "the miscommunication caused delays"
+      },
+      {
+        "id": "in-order-to-11",
+        "word": "in order to",
+        "sentence": "She trained rigorously in order to win the championship.",
+        "idea1": "She trained rigorously",
+        "idea2": "win the championship"
+      },
+      {
+        "id": "just-as-12",
+        "word": "just as",
+        "sentence": "Just as a well-tended garden flourishes, so does a community thrive with care and cooperation.",
+        "idea1": "a well-tended garden flourishes",
+        "idea2": "a community thrive with care and cooperation"
+      },
+      {
+        "id": "seem-like-13",
+        "word": "seem like",
+        "sentence": "The improved policy changes seem like a step in the right direction.",
+        "idea1": "The improved policy changes",
+        "idea2": "a step in the right direction"
+      },
+      {
+        "id": "no-choice-but-to-14",
+        "word": "no choice but to",
+        "sentence": "The failing business had no choice but to declare bankruptcy and close its doors.",
+        "idea1": "The failing business",
+        "idea2": "declare bankruptcy and close its doors"
+      },
+      {
+        "id": "only-with-15",
+        "word": "only with",
+        "sentence": "Only with hard work and determination can success be achieved.",
+        "idea1": "hard work and determination",
+        "idea2": "success be achieved"
+      },
+      {
+        "id": "leads-to-16",
+        "word": "leads to/leading to/led to",
+        "sentence": "Their thorough planning led to a flawless execution of the event.",
+        "idea1": "Their thorough planning",
+        "idea2": "a flawless execution of the event"
+      },
+      {
+        "id": "as-adjective-as-it-is-17",
+        "word": "as (adjective) as it is (adjective)",
+        "sentence": "The solution is as effective as it is simple.",
+        "idea1": "effective",
+        "idea2": "simple"
+      },
+      {
+        "id": "from-this-18",
+        "word": "from this",
+        "sentence": "From this valuable experience, we learned how to tackle the next situation.",
+        "idea1": "this valuable experience",
+        "idea2": "we learned how to tackle the next situation"
+      },
+      {
+        "id": "such-as-19",
+        "word": "such as",
+        "sentence": "She noted numerous flaws in the writing, such as grammatical errors and awkward phrasing.",
+        "idea1": "numerous flaws in the writing",
+        "idea2": "grammatical errors and awkward phrasing"
+      },
+      {
+        "id": "in-light-of-20",
+        "word": "in light of",
+        "sentence": "In light of recent successes, the company is expanding its operations.",
+        "idea1": "recent successes",
+        "idea2": "the company is expanding its operations"
+      },
+      {
+        "id": "have-a-tendency-toward-21",
+        "word": "have a tendency toward",
+        "sentence": "The old building has a tendency toward frequent plumbing issues and structural weaknesses.",
+        "idea1": "The old building",
+        "idea2": "frequent plumbing issues and structural weaknesses"
+      },
+      {
+        "id": "tends-to-22",
+        "word": "tends to",
+        "sentence": "The dedicated team tends to consistently exceed their project goals and deliver outstanding results.",
+        "idea1": "The dedicated team",
+        "idea2": "consistently exceed their project goals and deliver outstanding results"
+      }
+    ],
+    "contrastPhrases": [
+      {
+        "id": "stark-contrast-1",
+        "word": "stark contrast",
+        "sentence": "The serene countryside was in stark contrast to the bustling city.",
+        "idea1": "The serene countryside",
+        "idea2": "the bustling city"
+      },
+      {
+        "id": "on-the-other-hand-2",
+        "word": "on the other hand",
+        "sentence": "The project was delivered on time; on the other hand, the quality was subpar.",
+        "idea1": "The project was delivered on time",
+        "idea2": "the quality was subpar"
+      },
+      {
+        "id": "for-all-the-3",
+        "word": "for all the",
+        "sentence": "For all the benefits of remote work, it can also lead to feelings of isolation.",
+        "idea1": "the benefits of remote work",
+        "idea2": "it can also lead to feelings of isolation"
+      },
+      {
+        "id": "taken-a-turn-4",
+        "word": "taken a turn",
+        "sentence": "The weather had been pleasant but suddenly taken a turn for the worse.",
+        "idea1": "The weather had been pleasant",
+        "idea2": "taken a turn for the worse"
+      },
+      {
+        "id": "by-contrast-5",
+        "word": "by contrast",
+        "sentence": "The new software is user-friendly; by contrast, the old version was complicated and slow.",
+        "idea1": "The new software is user-friendly",
+        "idea2": "the old version was complicated and slow"
+      },
+      {
+        "id": "rather-than-6",
+        "word": "rather than",
+        "sentence": "He chose to rest rather than push himself and risk injury.",
+        "idea1": "He chose to rest",
+        "idea2": "push himself and risk injury"
+      },
+      {
+        "id": "only-to-7",
+        "word": "only to",
+        "sentence": "She worked hard on the project only to find out it was canceled.",
+        "idea1": "She worked hard on the project",
+        "idea2": "find out it was canceled"
+      },
+      {
+        "id": "far-from-8",
+        "word": "far from",
+        "sentence": "Far from being a failure, the project turned out to be a great success.",
+        "idea1": "being a failure",
+        "idea2": "the project turned out to be a great success"
+      },
+      {
+        "id": "in-spite-of-9",
+        "word": "in spite of",
+        "sentence": "In spite of the challenges, they managed to achieve their goals.",
+        "idea1": "the challenges",
+        "idea2": "they managed to achieve their goals"
+      },
+      {
+        "id": "force-to-10",
+        "word": "force to",
+        "sentence": "The bullies who tormented kids were forced to apologize to the entire school.",
+        "idea1": "The bullies who tormented kids",
+        "idea2": "apologize to the entire school"
+      },
+      {
+        "id": "on-the-contrary-11",
+        "word": "on the contrary",
+        "sentence": "He thought the exam would be easy; on the contrary, it was extremely difficult.",
+        "idea1": "He thought the exam would be easy",
+        "idea2": "it was extremely difficult"
+      },
+      {
+        "id": "turn-into-12",
+        "word": "turn into",
+        "sentence": "The peaceful protest turned into a chaotic scene when violence erupted.",
+        "idea1": "The peaceful protest",
+        "idea2": "a chaotic scene when violence erupted"
+      },
+      {
+        "id": "transform-13",
+        "word": "transform",
+        "sentence": "Her guidance helped transform a struggling student into a top performer.",
+        "idea1": "a struggling student",
+        "idea2": "a top performer"
+      },
+      {
+        "id": "sharp-contrast-14",
+        "word": "sharp contrast",
+        "sentence": "The vibrant artwork was in sharp contrast to the dull surroundings.",
+        "idea1": "The vibrant artwork",
+        "idea2": "the dull surroundings"
+      },
+      {
+        "id": "to-be-sure-15",
+        "word": "to be sure",
+        "sentence": "The task is difficult, to be sure, but it's not impossible.",
+        "idea1": "The task is difficult",
+        "idea2": "it's not impossible"
+      },
+      {
+        "id": "i-do-admit-16",
+        "word": "I do admit",
+        "sentence": "I do admit the movie had some good scenes, but overall it was disappointing.",
+        "idea1": "the movie had some good scenes",
+        "idea2": "overall it was disappointing"
+      },
+      {
+        "id": "i-do-concede-17",
+        "word": "I do concede",
+        "sentence": "I do concede that he is talented, although his methods are unorthodox.",
+        "idea1": "he is talented",
+        "idea2": "his methods are unorthodox"
+      },
+      {
+        "id": "i-do-acknowledge-18",
+        "word": "I do acknowledge",
+        "sentence": "I do acknowledge her hard work, even if the results were not perfect.",
+        "idea1": "her hard work",
+        "idea2": "the results were not perfect"
+      },
+      {
+        "id": "in-fact-19",
+        "word": "in fact",
+        "sentence": "The project seemed daunting at first; in fact, it turned out to be quite manageable.",
+        "idea1": "The project seemed daunting at first",
+        "idea2": "it turned out to be quite manageable"
+      },
+      {
+        "id": "no-matter-20",
+        "word": "no matter",
+        "sentence": "No matter how hard he tried, he couldn't solve the problem.",
+        "idea1": "how hard he tried",
+        "idea2": "he couldn't solve the problem"
+      }
+    ],
+    "lessObviousSupportWords": [
+      {
+        "id": "make-made-1",
+        "word": "make/made",
+        "sentence": "She smiled warmly, making everyone in the room feel welcome.",
+        "idea1": "She smiled warmly",
+        "idea2": "everyone in the room feel welcome"
+      },
+      {
+        "id": "have-has-2",
+        "word": "have/has",
+        "sentence": "He studied hard, having realized the importance of the exam.",
+        "idea1": "He studied hard",
+        "idea2": "realized the importance of the exam"
+      },
+      {
+        "id": "to-3",
+        "word": "to",
+        "sentence": "He stayed late at the office to finish the project.",
+        "idea1": "He stayed late at the office",
+        "idea2": "finish the project"
+      },
+      {
+        "id": "show-showing-4",
+        "word": "show/showing",
+        "sentence": "He hid the report, showing his lack of honesty.",
+        "idea1": "He hid the report",
+        "idea2": "his lack of honesty"
+      },
+      {
+        "id": "demonstrate-demonstrating-5",
+        "word": "demonstrate/demonstrating",
+        "sentence": "She ignored the warnings, demonstrating her disregard for safety.",
+        "idea1": "She ignored the warnings",
+        "idea2": "her disregard for safety"
+      },
+      {
+        "id": "suggest-6",
+        "word": "suggest",
+        "sentence": "His constant lateness suggests a lack of commitment.",
+        "idea1": "His constant lateness",
+        "idea2": "a lack of commitment"
+      },
+      {
+        "id": "render-has-rendered-7",
+        "word": "render/has rendered",
+        "sentence": "The software malfunction renders the system useless.",
+        "idea1": "The software malfunction",
+        "idea2": "the system useless"
+      },
+      {
+        "id": "poses-8",
+        "word": "poses",
+        "sentence": "The broken bridge poses a serious risk to travelers.",
+        "idea1": "The broken bridge",
+        "idea2": "a serious risk to travelers"
+      }
+    ],
+    "lessObviousContrastWords": [
+      {
+        "id": "belie-1",
+        "word": "belie",
+        "sentence": "His calm demeanor belies his underlying anxiety.",
+        "idea1": "His calm demeanor",
+        "idea2": "his underlying anxiety"
+      },
+      {
+        "id": "fight-2",
+        "word": "fight",
+        "sentence": "When good fights evil...",
+        "idea1": "good",
+        "idea2": "evil"
+      },
+      {
+        "id": "balance-3",
+        "word": "balance",
+        "sentence": "The humor in the story balances well with its sadness.",
+        "idea1": "The humor in the story",
+        "idea2": "its sadness"
+      },
+      {
+        "id": "oscillate-4",
+        "word": "oscillate",
+        "sentence": "His mood oscillates between happiness and despair.",
+        "idea1": "happiness",
+        "idea2": "despair"
+      },
+      {
+        "id": "ironic-ironically-5",
+        "word": "ironic/ironically",
+        "sentence": "Ironically, the safest car on the market had the most recalls.",
+        "idea1": "the safest car on the market",
+        "idea2": "had the most recalls"
+      },
+      {
+        "id": "paradox-paradoxically-6",
+        "word": "paradox/paradoxically",
+        "sentence": "Paradoxically, the more he learns, the less confident he feels.",
+        "idea1": "the more he learns",
+        "idea2": "the less confident he feels"
+      },
+      {
+        "id": "remarkable-remarkably-7",
+        "word": "remarkable/remarkably",
+        "sentence": "Remarkably, the smallest player on the team scored the most goals.",
+        "idea1": "the smallest player on the team",
+        "idea2": "scored the most goals"
+      },
+      {
+        "id": "puzzling-8",
+        "word": "puzzling",
+        "sentence": "It is puzzling that he excels in practice but struggles during actual games.",
+        "idea1": "he excels in practice",
+        "idea2": "struggles during actual games"
+      },
+      {
+        "id": "surprise-surprisingly-9",
+        "word": "surprise/suprising/surprisingly",
+        "sentence": "Surprisingly, the least experienced candidate performed the best.",
+        "idea1": "the least experienced candidate",
+        "idea2": "performed the best"
+      },
+      {
+        "id": "supposed-10",
+        "word": "supposed",
+        "sentence": "He was supposed to be the expert, but he didn't know the basics.",
+        "idea1": "He was supposed to be the expert",
+        "idea2": "he didn't know the basics"
+      },
+      {
+        "id": "opposition-11",
+        "word": "opposition",
+        "sentence": "There is significant opposition between economic growth and environmental protection.",
+        "idea1": "economic growth",
+        "idea2": "environmental protection"
+      },
+      {
+        "id": "versus-12",
+        "word": "versus",
+        "sentence": "It's a classic case of quality versus quantity.",
+        "idea1": "quality",
+        "idea2": "quantity"
+      },
+      {
+        "id": "wish-13",
+        "word": "wish",
+        "sentence": "John wished that he would never experience war; the war began the next day.",
+        "idea1": "he would never experience war",
+        "idea2": "the war began the next day"
+      },
+      {
+        "id": "hope-14",
+        "word": "hope",
+        "sentence": "Frank hoped that he'd be rich; his small apartment was a reminder that he wasn't.",
+        "idea1": "he'd be rich",
+        "idea2": "his small apartment was a reminder that he wasn't"
+      },
+      {
+        "id": "odd-oddly-15",
+        "word": "odd/oddly",
+        "sentence": "Oddly, the simplest solution was the hardest to find.",
+        "idea1": "the simplest solution",
+        "idea2": "the hardest to find"
+      },
+      {
+        "id": "pendulum-16",
+        "word": "pendulum",
+        "sentence": "His decisions swing like a pendulum between caution and recklessness.",
+        "idea1": "caution",
+        "idea2": "recklessness"
+      },
+      {
+        "id": "force-17",
+        "word": "force",
+        "sentence": "Students who insist on not studying sometimes must be forced to study hard.",
+        "idea1": "insist on not studying",
+        "idea2": "forced to study hard"
+      },
+      {
+        "id": "counter-18",
+        "word": "counter",
+        "sentence": "His cautious approach counters his frequent reckless decisions.",
+        "idea1": "His cautious approach",
+        "idea2": "his frequent reckless decisions"
+      },
+      {
+        "id": "counterintuitive-19",
+        "word": "counterintuitive",
+        "sentence": "It's counterintuitive that exercise can increase your energy levels when you're tired.",
+        "idea1": "exercise can increase your energy levels",
+        "idea2": "when you're tired"
+      },
+      {
+        "id": "curious-20",
+        "word": "curious",
+        "sentence": "It's curious that the more he eats, the thinner he gets.",
+        "idea1": "the more he eats",
+        "idea2": "the thinner he gets"
+      },
+      {
+        "id": "admittedly-21",
+        "word": "admittedly",
+        "sentence": "Pizza is amazing. Admittedly, it is unhealthy.",
+        "idea1": "Pizza is amazing",
+        "idea2": "it is unhealthy"
+      },
+      {
+        "id": "unexpectedly-22",
+        "word": "unexpectedly",
+        "sentence": "Unexpectedly, the quietest person in the room had the most to say.",
+        "idea1": "the quietest person in the room",
+        "idea2": "had the most to say"
+      },
+      {
+        "id": "typically-23",
+        "word": "typically",
+        "sentence": "Typically he is sad; today, he is happy.",
+        "idea1": "he is sad",
+        "idea2": "today, he is happy"
+      },
+      {
+        "id": "prevent-24",
+        "word": "prevent (and similar type words)",
+        "sentence": "Lack of funding prevents the project from moving forward.",
+        "idea1": "Lack of funding",
+        "idea2": "the project from moving forward"
+      }
+    ],
+    "noLogicChange": [
+      {
+        "id": "nothing-but-1",
+        "word": "nothing but",
+        "sentence": "He is nothing but happy. = He is happy.",
+        "idea1": "He is happy",
+        "idea2": "'nothing but' does not change the meaning"
+      },
+      {
+        "id": "a-few-2",
+        "word": "a few",
+        "sentence": "I have a few friends. = I have friends.",
+        "idea1": "I have friends",
+        "idea2": "'a few' does not change the meaning"
+      },
+      {
+        "id": "little-more-than-3",
+        "word": "little more than",
+        "sentence": "She is little more than a bully. = She is a bully.",
+        "idea1": "She is a bully",
+        "idea2": "'little more than' does not change the meaning"
+      },
+      {
+        "id": "just-4",
+        "word": "just",
+        "sentence": "He is just a child. = He is a child.",
+        "idea1": "He is a child",
+        "idea2": "'just' does not change the meaning"
+      },
+      {
+        "id": "simply-5",
+        "word": "simply",
+        "sentence": "He is simply hungry. = He is hungry.",
+        "idea1": "He is hungry",
+        "idea2": "'simply' does not change the meaning"
+      },
+      {
+        "id": "merely-6",
+        "word": "merely",
+        "sentence": "It was merely a suggestion. = It was a suggestion.",
+        "idea1": "It was a suggestion",
+        "idea2": "'merely' does not change the meaning"
+      },
+      {
+        "id": "nothing-more-than-6",
+        "word": "nothing more than",
+        "sentence": "You are nothing more than a friend. = You are a friend.",
+        "idea1": "You are a friend",
+        "idea2": "'nothing more than' does not change the meaning"
+      },
+      {
+        "id": "no-more-than-8",
+        "word": "no more than",
+        "sentence": "He is no more than a beginner. = He is a beginner.",
+        "idea1": "He is a beginner",
+        "idea2": "'no more than' does not change the meaning"
+      },
+      {
+        "id": "but-a-9",
+        "word": "but a",
+        "sentence": "It is but a rose. = It is a rose.",
+        "idea1": "It is a rose",
+        "idea2": "'but a' does not change the meaning"
+      },
+      {
+        "id": "virtually-10",
+        "word": "virtually",
+        "sentence": "The task is virtually complete. = The task is complete.",
+        "idea1": "The task is complete",
+        "idea2": "'virtually' does not change the meaning"
+      },
+      {
+        "id": "nothing-but-11",
+        "word": "nothing but",
+        "sentence": "John is nothing but awesome. = John is awesome.",
+        "idea1": "John is awesome",
+        "idea2": "'nothing but' does not change the meaning"
+      },
+      {
+        "id": "a-little-12",
+        "word": "a little",
+        "sentence": "I have a little money. = I have money.",
+        "idea1": "I have money",
+        "idea2": "'a little' does not change the meaning"
+      },
+      {
+        "id": "not-without-13",
+        "word": "not without",
+        "sentence": "The task was not without challenges. = The task had challenges.",
+        "idea1": "The task had challenges",
+        "idea2": "'not without' does not change the meaning"
+      },
+      {
+        "id": "not-unlike-14",
+        "word": "not unlike",
+        "sentence": "This is not unlike you. = This is like you.",
+        "idea1": "This is like you",
+        "idea2": "'not unlike' does not change the meaning"
+      },
+      {
+        "id": "beyond-doubt-15",
+        "word": "beyond doubt",
+        "sentence": "He is beyond doubt a nice guy. = He is a nice guy.",
+        "idea1": "He is a nice guy",
+        "idea2": "'beyond doubt' does not change the meaning"
+      },
+      {
+        "id": "without-question-16",
+        "word": "without question",
+        "sentence": "She is without question beautiful. = She is beautiful.",
+        "idea1": "She is beautiful",
+        "idea2": "'without question' does not change the meaning"
+      },
+      {
+        "id": "very-17",
+        "word": "very",
+        "sentence": "I am very sleepy. = I am sleepy.",
+        "idea1": "I am sleepy",
+        "idea2": "'very' does not change the meaning"
+      },
+      {
+        "id": "extremely-18",
+        "word": "extremely",
+        "sentence": "Dogs are extremely cool. = Dogs are cool.",
+        "idea1": "Dogs are cool",
+        "idea2": "'extremely' does not change the meaning"
+      }
+    ],
+    "negationWords": [
+      {
+        "id": "anything-but-1",
+        "word": "anything but",
+        "sentence": "He is anything but happy. = He is not happy.",
+        "idea1": "He is anything but happy",
+        "idea2": "He is not happy"
+      },
+      {
+        "id": "little-2",
+        "word": "little",
+        "sentence": "He has little money. = He has no money.",
+        "idea1": "He has little money",
+        "idea2": "He has no money"
+      },
+      {
+        "id": "few-3",
+        "word": "few",
+        "sentence": "She has few problems. = She has no problems.",
+        "idea1": "She has few problems",
+        "idea2": "She has no problems"
+      },
+      {
+        "id": "everything-but-4",
+        "word": "everything but",
+        "sentence": "James is everything but nice. = James is not nice.",
+        "idea1": "James is everything but nice",
+        "idea2": "James is not nice"
+      },
+      {
+        "id": "rarely-5",
+        "word": "rarely",
+        "sentence": "This rarely succeeds. = This will not succeed.",
+        "idea1": "This rarely succeeds",
+        "idea2": "This will not succeed"
+      },
+      {
+        "id": "less-6",
+        "word": "less",
+        "sentence": "John is less greedy. = John is not greedy.",
+        "idea1": "John is less greedy",
+        "idea2": "John is not greedy"
+      },
+      {
+        "id": "yet-to-7",
+        "word": "yet to",
+        "sentence": "We have yet to clean the bathroom. = We have not cleaned the bathroom.",
+        "idea1": "We have yet to clean the bathroom",
+        "idea2": "We have not cleaned the bathroom"
+      },
+      {
+        "id": "hardly-ever-8",
+        "word": "hardly ever",
+        "sentence": "Sarah hardly ever sleeps early. Sarah doesn't sleep early.",
+        "idea1": "Sarah hardly ever sleeps early",
+        "idea2": "Sarah doesn't sleep early"
+      },
+      {
+        "id": "scarcely-9",
+        "word": "scarcely",
+        "sentence": "Aditya scarcely remembers others' names. Aditya doesn't remember other's names.",
+        "idea1": "Aditya scarcely remembers others' names",
+        "idea2": "Aditya doesn't remember other's names"
+      },
+      {
+        "id": "hardly-10",
+        "word": "hardly",
+        "sentence": "This could hardly be described as good. = This cannot be described as good.",
+        "idea1": "This could hardly be described as good",
+        "idea2": "This cannot be described as good"
+      },
+      {
+        "id": "could-have-11",
+        "word": "could have",
+        "sentence": "I could have passed the test. = I didn't pass the test.",
+        "idea1": "I could have passed the test",
+        "idea2": "I didn't pass the test"
+      },
+      {
+        "id": "would-have-12",
+        "word": "would have",
+        "sentence": "I would have won the fight. = I did not fight.",
+        "idea1": "I would have won the fight",
+        "idea2": "I did not fight"
+      },
+      {
+        "id": "might-have-13",
+        "word": "might have",
+        "sentence": "I might have accomplished much. = I did not accomplish much.",
+        "idea1": "I might have accomplished much",
+        "idea2": "I did not accomplish much"
+      }
+    ]
+  }
+}

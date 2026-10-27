@@ -1,0 +1,96 @@
+/* The GRE tracker wears the home page's theme. These tokens mirror .study-map in
+   app/learn/learn.css, which mirrors .root in components/home/home.module.css;
+   keep the three in step. */
+.gre {
+  --paper: #fff;
+  --paper-2: #f7f7f7;
+  --ink: #111;
+  --grey: #5c5c5c;
+  --rule: #dadada;
+  --rule-strong: #bcbcbc;
+  --r-card: 12px;
+  --r-ctl: 8px;
+
+  /* The theme tokens the components' utility classes read, pointed at paper and ink. */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-2);
+  --muted-foreground: var(--grey);
+  --accent: var(--paper-2);
+  --accent-foreground: var(--ink);
+  --border: var(--rule);
+  --input: var(--rule-strong);
+  --ring: var(--ink);
+
+  /* Done keeps its colour: it is information, not decoration. Same green as /learn. */
+  --done: oklch(0.58 0.12 165);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  font-family: var(--home-sans), ui-sans-serif, sans-serif;
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark .gre {
+  --paper: #0c0c0b;
+  --paper-2: #151514;
+  --ink: #ecece6;
+  --grey: #a3a39d;
+  --rule: #2a2a28;
+  --rule-strong: #474744;
+  --done: oklch(0.78 0.13 165);
+}
+
+.gre ::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Funnel Display for names; Fragment Mono for every number, time and date. */
+.gre h1,
+.gre h2,
+.gre .gre-display {
+  font-family: var(--home-display), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.gre .font-mono {
+  font-family: var(--home-mono), ui-monospace, monospace;
+}
+
+/* The home page's corners: 8px on controls, 12px on cards. */
+.gre button,
+.gre input,
+.gre [role="group"] {
+  border-radius: var(--r-ctl);
+}
+
+.gre .gre-card {
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+}
+
+/* Press feedback for anything clickable. */
+.gre .gre-press {
+  transition:
+    transform 140ms var(--ease-out),
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 200ms ease;
+}
+
+.gre .gre-press:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gre .gre-press:active {
+    transform: none;
+  }
+}
