@@ -550,10 +550,10 @@ export function HomePage({ profile }: { profile: Profile }) {
         timeZone={shared.timeZone}
         socials={shared.socials}
         scene={footerScene ? { src: footerScene, alt: FOOTER_SCENE_ALT } : null}
+        dock={<Dock />}
       />
 
       <Notch sections={notchSections} />
-      <Dock />
     </div>
   );
 }

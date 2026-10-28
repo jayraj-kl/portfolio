@@ -229,54 +229,26 @@ export function Contributions({ username }: { username: string }) {
 // The site's floating dock, re-skinned from here (the shared component is untouched).
 
 // The dock follows the screen until the footer's scene rises to meet it, then parks just above
-// the scene and scrolls away with the page, so the picture is never covered.
-const DOCK_GAP = 16;
-
-function useDockPark() {
-  const dock = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = dock.current;
-    const stop = document.querySelector<HTMLElement>("[data-dock-stop]");
-    if (!el || !stop) return;
-    let frame = 0;
-    const place = () => {
-      frame = 0;
-      // Where the dock's bottom sits while it follows the screen.
-      const rest = window.innerHeight - parseFloat(getComputedStyle(el).bottom || "0");
-      const lift = Math.min(0, stop.getBoundingClientRect().top - DOCK_GAP - rest);
-      el.style.translate = lift ? `0 ${lift}px` : "";
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(place);
-    };
-    place();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-  return dock;
-}
-
+// the scene and scrolls away with the page, so the picture is never covered. A sticky rail does
+// this rather than a scroll listener: the browser moves it with the scroll itself, so it never
+// lags a frame behind and shudders as it parks.
 // On opening it springs up from below and a shine runs once around its edge, as on yo-hackyfolio.
 export function Dock() {
-  const ref = useDockPark();
   return (
-    <div ref={ref} className={styles.dock}>
-      <motion.div
-        className={styles.dockPop}
-        initial={{ opacity: 0, y: 60, scale: 0.8 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 15, delay: 0.35 }}
-      >
-        <LiquidMetalBorder radius={9999}>
-          <FloatingDock items={links} desktopClassName={styles.dockDesktop} mobileClassName={styles.dockMobile} />
-        </LiquidMetalBorder>
-        <span className={styles.dockShine} aria-hidden="true" />
-      </motion.div>
+    <div className={styles.dockRail}>
+      <div className={styles.dock}>
+        <motion.div
+          className={styles.dockPop}
+          initial={{ opacity: 0, y: 60, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 15, delay: 0.35 }}
+        >
+          <LiquidMetalBorder radius={9999}>
+            <FloatingDock items={links} desktopClassName={styles.dockDesktop} mobileClassName={styles.dockMobile} />
+          </LiquidMetalBorder>
+          <span className={styles.dockShine} aria-hidden="true" />
+        </motion.div>
+      </div>
     </div>
   );
 }

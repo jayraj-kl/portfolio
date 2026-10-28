@@ -1618,9 +1618,17 @@ a.arrowCell:hover svg {
 
 /* ---------- Dock (the site's FloatingDock, squared to the plate) ---------- */
 
-.dock {
-  position: fixed;
+/* A zero-height rail that sticks to the screen's bottom edge until it reaches its own place in
+   the page, just above the footer's scene; the dock hangs above it. */
+.dockRail {
+  position: sticky;
   z-index: 50;
+  bottom: 0;
+  height: 0;
+}
+
+.dock {
+  position: absolute;
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);

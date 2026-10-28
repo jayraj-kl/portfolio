@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { AsciiArt } from "@/components/ui/sss";
@@ -15,6 +16,7 @@ export function SiteFooter({
   timeZone,
   socials,
   scene,
+  dock,
 }: {
   name: string;
   fullName: string;
@@ -23,37 +25,45 @@ export function SiteFooter({
   socials: Link[];
   /** A still for the scene; without one it plays the "sss" ASCII recipe. */
   scene: { src: string; alt: string } | null;
+  /** The floating dock, parked just above the scene. */
+  dock?: ReactNode;
 }) {
   const year = new Date().getFullYear();
 
+  // The scene sits outside the <footer> so the dock, between them, is a child of the page root:
+  // a sticky element only travels within its parent, and the root spans the whole page.
   return (
-    <footer className={styles.siteFooter}>
-      <div className={styles.footTop}>
-        <div className={styles.footHead}>
-          <p className={styles.footName}>{name}.</p>
-          <p className={styles.footAside}>
-            {location} · <Clock timeZone={timeZone} /> IST
-          </p>
+    <>
+      <footer className={styles.siteFooter}>
+        <div className={styles.footTop}>
+          <div className={styles.footHead}>
+            <p className={styles.footName}>{name}.</p>
+            <p className={styles.footAside}>
+              {location} · <Clock timeZone={timeZone} /> IST
+            </p>
+          </div>
+          <div className={styles.footMeta}>
+            <ul className={styles.footLinks}>
+              {socials.map((l) => (
+                <li key={l.href}>
+                  <a href={l.href} target="_blank" rel="noreferrer">
+                    {l.label}
+                    <ArrowUpRight size={12} strokeWidth={2} aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className={styles.footCopy}>
+              © {year} {fullName}
+            </p>
+          </div>
         </div>
-        <div className={styles.footMeta}>
-          <ul className={styles.footLinks}>
-            {socials.map((l) => (
-              <li key={l.href}>
-                <a href={l.href} target="_blank" rel="noreferrer">
-                  {l.label}
-                  <ArrowUpRight size={12} strokeWidth={2} aria-hidden="true" />
-                </a>
-              </li>
-            ))}
-          </ul>
-          <p className={styles.footCopy}>
-            © {year} {fullName}
-          </p>
-        </div>
-      </div>
+      </footer>
 
       {/* The floating dock parks above this edge rather than covering the scene. */}
-      <div className={styles.footScene} data-dock-stop>
+      {dock}
+
+      <div className={styles.footScene}>
         {/* The scene surfaces out of the paper in scanlines, then fills in. */}
         <div className={styles.footMedia}>
           {scene ? (
@@ -73,6 +83,6 @@ export function SiteFooter({
           )}
         </div>
       </div>
-    </footer>
+    </>
   );
 }
