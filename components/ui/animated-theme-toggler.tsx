@@ -75,7 +75,7 @@ export const AnimatedThemeToggler = ({
       ref={buttonRef}
       onClick={toggleTheme}
       className={cn(
-        "h-full w-full rounded-full transition-all duration-300 active:scale-95",
+        "block h-full w-full rounded-full transition-all duration-300 active:scale-95",
         className,
       )}
       type="button"
