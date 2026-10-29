@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  signOut,
-  setQuantPracticed,
-  setReviewedWords,
-} from "@/app/gre/actions";
+import { setQuantPracticed, setReviewedWords } from "@/app/gre/actions";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { Dashboard } from "@/components/gre/dashboard";
 import { QuantScreen } from "@/components/gre/quant-screen";
@@ -86,14 +82,6 @@ export function GreTracker({
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <form action={signOut}>
-              <button
-                type="submit"
-                className="gre-press px-2.5 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                Sign out
-              </button>
-            </form>
             <div className="grid size-9 place-items-center rounded-full border border-foreground/15 p-2 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground">
               <AnimatedThemeToggler
                 aria-label="Switch between light and dark"
