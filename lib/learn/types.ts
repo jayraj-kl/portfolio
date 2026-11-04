@@ -12,6 +12,11 @@ export type Topic = {
   links: TopicLink[];
 };
 
+// The fields an edit can change on a topic.
+export type TopicPatch = Partial<
+  Pick<Topic, "title" | "status" | "notes" | "links">
+>;
+
 export type StudyMap = {
   id: string;
   topics: Topic[];

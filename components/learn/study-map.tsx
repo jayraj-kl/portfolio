@@ -21,7 +21,7 @@ import {
   indexChildren,
   type ChildIndex,
 } from "@/lib/learn/tree";
-import type { Progress, Topic } from "@/lib/learn/types";
+import type { Progress, StudyLibrary, Topic } from "@/lib/learn/types";
 import { cn } from "@/lib/utils";
 
 type View = "map" | "list";
@@ -29,8 +29,13 @@ type View = "map" | "list";
 const CHIP =
   "sm-press sm-chip shrink-0 border px-3 py-1 text-sm font-medium whitespace-nowrap";
 
-export function StudyMap() {
-  const { library, actions } = useStudyLibrary();
+export function StudyMap({
+  initialLibrary,
+}: {
+  // Null while the database is still empty.
+  initialLibrary: StudyLibrary | null;
+}) {
+  const { library, actions, saveFailed } = useStudyLibrary(initialLibrary);
   const [view, setView] = useState<View>("map");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeMapId, setActiveMapId] = useState<string | null>(null);
@@ -119,27 +124,16 @@ export function StudyMap() {
     setSelectedId(id);
   };
 
-  const reset = async () => {
-    if (
-      !window.confirm(
-        "Replace everything with the sample maps? Your changes in this browser will be lost.",
-      )
-    ) {
-      return;
-    }
-    setSelectedId(null);
-    setActiveMapId(null);
-    setCollapsedOverride(null);
-    await actions.reset();
-  };
-
   const selected = (selectedId && derived?.topics.get(selectedId)) || null;
   const canDeleteMap = (library?.maps.length ?? 0) > 1;
 
   return (
     <>
       <div className="study-map fixed inset-0 flex flex-col bg-background">
-        <header className="sm-navbar relative z-20 border-b border-foreground/15 bg-background/55 backdrop-blur-md md:absolute md:inset-x-0 md:top-0">
+        <header
+          data-arrow-cursor=""
+          className="sm-navbar relative z-20 border-b border-foreground/15 bg-background/55 backdrop-blur-md md:absolute md:inset-x-0 md:top-0"
+        >
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-3 pb-2 md:px-6">
             <div className="flex min-w-0 items-baseline gap-3">
               <h1 className="text-xl font-semibold whitespace-nowrap">
@@ -152,6 +146,14 @@ export function StudyMap() {
                 <IconArrowLeft className="size-3" />
                 {METADATA.title}
               </Link>
+              {saveFailed && (
+                <p
+                  role="alert"
+                  className="text-xs whitespace-nowrap text-destructive"
+                >
+                  Couldn&apos;t save a change. Reload to see what&apos;s stored.
+                </p>
+              )}
             </div>
 
             {derived && (
@@ -184,13 +186,6 @@ export function StudyMap() {
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={reset}
-                className="sm-press px-2.5 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                Reset to sample
-              </button>
               <div className="grid size-9 place-items-center rounded-full border border-foreground/15 p-2 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground">
                 <AnimatedThemeToggler
                   aria-label="Switch between light and dark"
