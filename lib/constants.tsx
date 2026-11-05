@@ -15,7 +15,7 @@ export const METADATA = {
 
 export const WEBSITE_URL = "https://jayrajladkat.com";
 
-export const DEFAULT_THEME = "dark";
+export const DEFAULT_THEME = "light";
 export const ANIMATION_THEME_TOGGLER_DURATION = 0.7 * 1000;
 
 export const GITHUB_GRAPH_CONSTANTS = {
