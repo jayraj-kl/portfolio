@@ -28,6 +28,7 @@ uniform vec4 u_fit;        // image rect in canvas uv: scale.xy, offset.zw
 uniform vec2 u_levels;     // tone range of the source: lo, hi
 uniform float u_gamma;     // applied after the levels; 1 leaves the tone as is
 uniform vec3 u_ink;
+uniform vec3 u_bg;         // page colour behind the canvas, sRGB; fills the silhouette
 uniform float u_invert;    // 1: dot size follows darkness (dark ink on paper)
 uniform float u_time;
 uniform float u_reveal;    // 0..1, bottom to top
@@ -89,19 +90,21 @@ void main() {
   }
 
   float tone = mix(lum, 1.0 - lum, u_invert);
-  // A gentle S-curve: the levelled source already spans the range, this only separates the features.
-  tone = smoothstep(0.0, 1.0, tone);
   tone = clamp(tone + scramble, 0.0, 1.0);
 
-  // One round dot per cell. The source's alpha shrinks the dots, so soft edges dwindle instead of
-  // greying, and faint tones also fade, so shadows thin out instead of speckling.
+  // One round dot per cell: its radius and its opacity both follow the tone, and the edge is crisp,
+  // so every dot reads as a circle. Faint tones give small, faint dots instead of grey speckle.
   vec2 local = gl_FragCoord.xy / u_cell - cellId - 0.5;
-  float radius = 0.5 * tone * smoothstep(0.04, 0.9, c.a);
-  float aa = 1.0 / u_cell;
-  float disc = smoothstep(radius + aa, radius - aa, length(local));
-  float a = disc * smoothstep(0.02, 0.25, tone);
+  float radius = tone * 0.48 * smoothstep(0.04, 0.9, c.a);
+  float aa = 0.5 / u_cell;
+  float disc = smoothstep(radius + aa, radius - aa, length(local)) * tone;
+  float dotA = clamp(disc * 1.75, 0.0, 1.0);
+  // The silhouette is filled with the background, so whatever is behind the canvas doesn't show
+  // between the dots and the bust reads as one solid form.
+  float fill = smoothstep(0.02, 0.2, c.a) * 0.94;
+  float a = dotA + fill * (1.0 - dotA);
   if (a < 0.004) discard;
-  gl_FragColor = vec4(u_ink * a, a); // premultiplied
+  gl_FragColor = vec4(u_ink * dotA + u_bg * fill * (1.0 - dotA), a); // premultiplied
 }
 `;
 

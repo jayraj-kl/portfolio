@@ -498,6 +498,15 @@ section.row > .cell {
 /* The 3D bust frames itself with its own headroom, so the plate's trim would cut the head. */
 .plate.bust {
   margin-top: 0;
+  cursor: grab;
+  /* Sideways drags turn the bust; vertical swipes still scroll the page. */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.plate.bust:active {
+  cursor: grabbing;
 }
 
 .canvas {

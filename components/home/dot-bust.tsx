@@ -23,8 +23,12 @@ import {
 
 export type DotBustHandle = { replay: () => void };
 
-const DRAG_YAW = 2.4; // radians of turn per canvas width dragged; there is no limit, so it turns right round
+// Turning works like three.js OrbitControls held level: a drag the canvas height long is one full
+// turn, with no limit, and the turn trails the pointer and glides to a stop (DAMPING per 60 Hz frame).
+const DRAG_TURN = Math.PI * 2;
+const DAMPING = 0.05;
 const DRAG_SLOP = 6; // px before a press counts as a drag rather than a tap
+const SHOWN = 0.8; // share of the bust height in frame, from the top of the head; the rest of the chest runs off the bottom edge
 const TAU = Math.PI * 2;
 const MIN_SPAN = 0.4; // narrowest tone range the levels stretch to the full dot range
 const MAX_GAMMA = 1.6;
@@ -60,6 +64,15 @@ function renderLevels(renderer: THREE.WebGLRenderer, rt: THREE.WebGLRenderTarget
   const lo = Math.min(at(0.02), hi - MIN_SPAN);
   const mid = Math.min(0.95, Math.max(0.05, (at(0.5) - lo) / (hi - lo)));
   return [lo, hi, Math.min(MAX_GAMMA, Math.log(0.5) / Math.log(mid))];
+}
+
+// The colour the canvas sits on: the first opaque background up the tree, else the body's.
+function pageColour(el: HTMLElement): [number, number, number] {
+  for (let n: HTMLElement | null = el; n; n = n.parentElement) {
+    const m = getComputedStyle(n).backgroundColor.match(/[\d.]+/g);
+    if (m && (m.length < 4 || Number(m[3]) > 0.5)) return [Number(m[0]), Number(m[1]), Number(m[2])];
+  }
+  return [255, 255, 255];
 }
 
 export function DotBust({
@@ -143,6 +156,7 @@ export function DotBust({
       u_levels: { value: new THREE.Vector2(0, 1) },
       u_gamma: { value: 1 },
       u_ink: { value: new THREE.Vector3(1, 1, 1) },
+      u_bg: { value: new THREE.Vector3(0, 0, 0) },
       u_invert: { value: 0 },
       u_time: { value: 0 },
       u_reveal: { value: 1 },
@@ -180,6 +194,7 @@ export function DotBust({
     let introStart = -1;
     let visible = true;
     let levelsSet = false;
+    let bgFor: boolean | null = null; // the theme u_bg was read for
     // After a turn the tone is measured again from the new view and eased to, so the back of the head
     // gets its own contrast without a snap. 0 means no measurement is waiting.
     let remeasureAt = 0;
@@ -214,8 +229,8 @@ export function DotBust({
     let drag: { x: number; yaw: number; moved: boolean } | null = null;
 
     // Fit the camera so the whole bust fits the canvas with a little margin, slightly above centre.
-    // Fill the width (shoulders to the edges) with the base on the bottom
-    // edge; back off only if the head would be cut.
+    // Frame the top SHOWN of the bust so it draws large, with the cut on the
+    // bottom edge; back off only if the shoulders would be cut at the sides.
     const frame = () => {
       const aspect = canvas.width / Math.max(1, canvas.height);
       camera.aspect = aspect;
@@ -223,10 +238,10 @@ export function DotBust({
       const hFov = 2 * Math.atan(Math.tan(vFov / 2) * aspect);
       const front = size.z / 2;
       const byWidth = (size.x / 2) * 0.98 / Math.tan(hFov / 2);
-      const byHeight = (size.y / 2) * 1.12 / Math.tan(vFov / 2);
+      const byHeight = (size.y * SHOWN / 2) * 1.04 / Math.tan(vFov / 2);
       const dist = Math.max(byWidth, byHeight) + front;
       const halfH = (dist - front) * Math.tan(vFov / 2);
-      const y = -size.y / 2 + halfH; // view centre that puts the base on the bottom edge
+      const y = size.y / 2 - size.y * SHOWN + halfH; // view centre that puts the cut on the bottom edge
       camera.position.set(0, y, dist);
       camera.lookAt(0, y, 0);
       camera.updateProjectionMatrix();
@@ -252,13 +267,13 @@ export function DotBust({
       lastFrame = now;
       const t = now / 1000;
 
-      // Idle sway (as on the reference: a few slow, small sines) plus the drag turn, eased.
-      yaw += (yawTarget - yaw) * (1 - Math.exp(-dt / 0.1));
+      // Idle sway (as on the reference: a few slow, small sines) plus the drag turn, damped.
+      yaw += (yawTarget - yaw) * (still() ? 1 : 1 - (1 - DAMPING) ** (dt * 60));
       const sway = still() ? 0 : 1;
-      pivot.rotation.y = yaw + sway * (0.06 * Math.sin(0.15 * t * TAU) + 0.03 * Math.sin(0.07 * t * TAU));
-      pivot.rotation.x = sway * (0.015 * Math.sin(0.12 * t * TAU) + 0.008 * Math.sin(0.05 * t * TAU));
-      pivot.rotation.z = sway * 0.006 * Math.sin(0.09 * t * TAU);
-      pivot.position.y = sway * 0.003 * size.y * Math.sin(0.25 * t * TAU);
+      pivot.rotation.y = yaw + sway * (0.03 * Math.sin(0.15 * t * TAU) + 0.018 * Math.sin(0.07 * t * TAU));
+      pivot.rotation.x = sway * (0.01 * Math.sin(0.12 * t * TAU) + 0.007 * Math.sin(0.05 * t * TAU));
+      pivot.rotation.z = sway * 0.005 * Math.sin(0.09 * t * TAU);
+      pivot.position.y = sway * 0.002 * size.y * Math.sin(0.25 * t * TAU);
 
       if (raw) {
         renderer.setRenderTarget(null);
@@ -300,7 +315,12 @@ export function DotBust({
       const ink = dark ? INK_DARK : INK_LIGHT;
       uniforms.u_cell.value = Math.max(2, cellPx * dpr);
       uniforms.u_ink.value.set(ink[0] / 255, ink[1] / 255, ink[2] / 255);
-      uniforms.u_invert.value = dark ? 0 : 1;
+      if (bgFor !== dark) {
+        const [r, g, b] = pageColour(canvas);
+        uniforms.u_bg.value.set(r / 255, g / 255, b / 255);
+        bgFor = dark;
+      }
+      uniforms.u_invert.value = 0; // dot size follows the light in both themes, as on the reference
       uniforms.u_time.value = t % 1000;
       uniforms.u_reveal.value = reveal;
       uniforms.u_mouse.value.set(scramble.mouse.x, scramble.mouse.y);
@@ -331,8 +351,7 @@ export function DotBust({
     };
     wakeRef.current = wake;
 
-    // While the bust is being dragged round, the dots hold still so the turn reads.
-    const scramble = new Scramble(canvas, TRAIL, wake, () => still() || !!drag?.moved);
+    const scramble = new Scramble(canvas, TRAIL, wake, still);
     scramble.attach(host);
 
     const replay = () => {
@@ -341,31 +360,35 @@ export function DotBust({
     };
     replayRef.current = replay;
 
-    // Drag sideways to turn the bust, all the way round if wanted.
+    // Drag sideways to turn the bust, all the way round if wanted. The pointer is captured, so the
+    // turn carries on when it leaves the plate; a vertical swipe on touch still scrolls the page.
     const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
       drag = { x: e.clientX, yaw: yawTarget, moved: false };
+      host.setPointerCapture?.(e.pointerId);
     };
     const onMove = (e: PointerEvent) => {
-      if (!drag || !(e.buttons & 1)) return;
+      if (!drag) return;
       const dx = e.clientX - drag.x;
       if (!drag.moved && Math.abs(dx) < DRAG_SLOP) return;
-      if (!drag.moved) scramble.reset();
       drag.moved = true;
-      const w = canvas.getBoundingClientRect().width || 1;
-      yawTarget = drag.yaw + (dx / w) * DRAG_YAW;
+      const h = canvas.getBoundingClientRect().height || 1;
+      yawTarget = drag.yaw + (dx / h) * DRAG_TURN;
       wake();
     };
-    const onUp = () => {
-      // Measure once the eased turn has settled.
+    const onUp = (e: PointerEvent) => {
+      // Measure once the damped turn has settled.
       if (drag?.moved) {
-        remeasureAt = performance.now() + (still() ? 0 : 400);
+        remeasureAt = performance.now() + (still() ? 0 : 900);
         wake();
       }
       drag = null;
+      if (host.hasPointerCapture?.(e.pointerId)) host.releasePointerCapture(e.pointerId);
     };
     host.addEventListener("pointerdown", onDown);
     host.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
+    host.addEventListener("pointerup", onUp);
+    host.addEventListener("pointercancel", onUp);
 
     const ro = new ResizeObserver(() => {
       if (resize()) wake();
@@ -434,7 +457,8 @@ export function DotBust({
       io.disconnect();
       host.removeEventListener("pointerdown", onDown);
       host.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
+      host.removeEventListener("pointerup", onUp);
+      host.removeEventListener("pointercancel", onUp);
       reduce.removeEventListener("change", onReduce);
       wakeRef.current = () => {};
       replayRef.current = () => {};

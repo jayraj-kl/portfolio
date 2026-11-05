@@ -11,7 +11,7 @@ const DotBust = dynamic(() => import("./dot-bust").then((m) => m.DotBust), { ssr
 export function HeroBust({ src, label }: { src: string; label: string }) {
   return (
     <div className={`${styles.plate} ${styles.bust}`}>
-      <DotBust src={src} label={label} look="clay" cell={3} className={styles.canvas} />
+      <DotBust src={src} label={label} look="clay" cell={4} className={styles.canvas} />
     </div>
   );
 }
