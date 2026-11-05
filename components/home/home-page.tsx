@@ -16,7 +16,7 @@ import {
   FIGURE_FIELD_DESCRIPTIONS,
   PROJECT_FIELD_DESCRIPTIONS,
 } from "@/components/home/halftone";
-import { HeroScreen } from "@/components/home/hero-screen";
+import { HeroBust } from "@/components/home/hero-bust";
 import { Clock, CopyText, EmailButton } from "@/components/home/interactive";
 import { Contributions, Dock, Expand, Logo, TechStack } from "@/components/home/parts";
 import { LiquidMetalBorder } from "@/components/ui/liquid-metal-border";
@@ -385,14 +385,9 @@ const SECTION_LABELS: Record<Block | "contact", string> = {
 
 export function HomePage({ profile }: { profile: Profile }) {
   const { content: c, shared } = getContent(profile);
-  // A background-removed PNG is preferred; a JPEG works too.
-  const portrait =
-    publicFile("home/portrait.png") ?? publicFile("home/portrait.jpg");
   const footerScene = publicFile("home/footer-landscape.jpg");
   const [lead, follow] = splitLine(c.positioning);
-  const portraitLabel = portrait
-    ? `Portrait of ${shared.name}, rendered as a diagonal line-screen halftone.`
-    : `Placeholder for ${shared.name}'s portrait: a head-and-shoulders form rendered as a diagonal line-screen halftone.`;
+  const portraitLabel = `${shared.name}'s head and shoulders, sculpted in 3D and drawn as a field of dots.`;
 
   // The set's own order, with the tech stack after experience and education and GitHub before the close.
   const order: Block[] = [];
@@ -466,7 +461,7 @@ export function HomePage({ profile }: { profile: Profile }) {
         <Row rowClass={styles.heroRow} cellClass={styles.hero} red>
           <div className={styles.heroHost} data-screen-host>
             {/* Photo, then name, pronunciation and time, then the line about the work. */}
-            <HeroScreen src={portrait} label={portraitLabel} />
+            <HeroBust src="/home/bust.glb" label={portraitLabel} />
             <div className={styles.heroText}>
               <div className={styles.identity}>
                 <p className={styles.identityName}>{shared.name}</p>

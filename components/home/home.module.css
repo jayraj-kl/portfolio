@@ -495,6 +495,11 @@ section.row > .cell {
   margin-top: calc(min(100%, 52rem) * -0.12);
 }
 
+/* The 3D bust frames itself with its own headroom, so the plate's trim would cut the head. */
+.plate.bust {
+  margin-top: 0;
+}
+
 .canvas {
   position: absolute;
   inset: 0;
@@ -1935,6 +1940,11 @@ a.arrowCell:hover svg {
   .plate {
     aspect-ratio: 16 / 10;
     margin-top: -10%;
+  }
+
+  .plate.bust {
+    aspect-ratio: 4 / 3;
+    margin-top: 0;
   }
 
   .heroText {

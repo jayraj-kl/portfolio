@@ -28,6 +28,7 @@
     "react-github-calendar": "^5.0.5",
     "react-use-measure": "^2.1.7",
     "tailwind-merge": "^3.4.0",
+    "three": "0.180.0",
     "torph": "0.1.3"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "0.180.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "shadcn": "^4.21.4",
