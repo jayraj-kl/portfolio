@@ -1,0 +1,258 @@
+%% ════════════════════════════════════════════════════════════════════════════
+%% Jayraj Kiran Ladkat — CV for the AI-for-ITS proposal (team-member section)
+%% Style: Fan-Lei-inspired (article class, full-width, clean typography)
+%% Compile: pdfLaTeX  ·  Overleaf: all packages preinstalled
+%% ════════════════════════════════════════════════════════════════════════════
+\documentclass[11pt,a4paper]{article}
+
+%% ── Encoding & fonts ───────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}                       % Latin Modern — clean serif default
+
+%% ── Page geometry ──────────────────────────────────────────────────────────
+\usepackage[top=1.6cm, bottom=2.0cm, left=1.8cm, right=1.8cm]{geometry}
+
+%% ── Typography ─────────────────────────────────────────────────────────────
+\usepackage{microtype}                     % subtle kerning improvements
+\setlength{\parindent}{0pt}                % no paragraph indent
+\setlength{\parskip}{0pt}                  % no inter-paragraph gap
+
+%% ── Section headers (small caps + coloured rule) ───────────────────────────
+\usepackage{titlesec}
+\setcounter{secnumdepth}{0}                % suppress section numbers
+
+\titleformat{\section}
+  {\large\scshape\color{heading}}          % small caps, coloured
+  {}                                        % no label
+  {0em}                                     % no indent
+  {}                                        % no prefix
+  [\color{heading}\titlerule]              % horizontal rule beneath
+\titlespacing*{\section}{0pt}{1.3ex plus 0.4ex}{0.8ex plus 0.2ex}
+
+%% ── Colours ────────────────────────────────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{heading}{RGB}{0, 90, 110}     % dark teal (section headers)
+\definecolor{linkblue}{RGB}{10, 80, 160}   % subtle navy (URLs)
+
+%% ── Hyperlinks ─────────────────────────────────────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks  = true,
+  urlcolor    = linkblue,
+  linkcolor   = black,
+  citecolor   = black,
+  pdfauthor   = {Jayraj Kiran Ladkat},
+  pdftitle    = {Jayraj Kiran Ladkat - CV},
+}
+
+%% ── Icons & Graphics ───────────────────────────────────────────────────────
+\usepackage{fontawesome5}                  % \faIcon{...} for contact line
+\usepackage{graphicx}                      % for figures
+
+%% ── Footer ─────────────────────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\footnotesize\textsc{Last Updated\,:\,Nov.\,5,\,2026}}
+\fancyfoot[C]{\footnotesize\textsc{Jayraj Kiran Ladkat\,--\,CV}}
+\fancyfoot[R]{\footnotesize\thepage/\pageref{LastPage}}
+
+%% ── Lists ──────────────────────────────────────────────────────────────────
+\usepackage{enumitem}
+\setlist[itemize]{nosep, leftmargin=1.5em, label=\textbullet, topsep=0.25em}
+
+%% ── Tables ─────────────────────────────────────────────────────────────────
+\usepackage{tabularx}
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── Header ──────────────────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries Jayraj Kiran Ladkat}\\[0.5em]
+  {\small
+    \faIcon{envelope}\;\href{mailto:jayrajkladkat@gmail.com}{jayrajkladkat@gmail.com}%
+    \quad
+    \faIcon{phone}\;+91\,97170\,61462%
+    \quad
+    \faIcon{map-marker-alt}\;Gurugram, Haryana, India%
+    \quad
+    \faIcon{globe}\;\href{https://portfolio-sand-one-17.vercel.app/}{portfolio}%
+  }\\[0.25em]
+  {\small
+    \faIcon{github}\;\href{https://github.com/jayraj-kl}{jayraj-kl}%
+    \quad
+    \faIcon{linkedin}\;\href{https://www.linkedin.com/in/jayraj-ladkat-25534626b}{jayraj-ladkat}%
+  }
+\end{center}
+
+\vspace{0.2em}
+
+% ── Summary ─────────────────────────────────────────────────────────────────
+\section{Summary}
+
+I build agentic systems and quantize deep learning models. At TIGER-Lab
+(University of Waterloo) I am building an iterative harness that improves how
+open- and closed-source models write code for rendered video, judged by a
+vision-language model (VLM). I co-authored a KL-guided mixed-precision
+quantization-aware training method for sub-4-bit inference (IEEE HiPC 2026).
+I use VLMs to evaluate generated video and am building up core computer vision
+(VLMs, segmentation) for deploying quantized models on edge devices.
+
+
+% ── Education ───────────────────────────────────────────────────────────────
+\section{Education}
+
+\noindent
+\begin{tabular*}{\textwidth}{@{}l@{\hspace{1.0em}}l@{\extracolsep{\fill}}r@{}}
+  10/2022\,--\,10/2026 & \textbf{B.Tech.\ in Computer Science and Engineering} & MIT World Peace University \\
+                       & & Pune, Maharashtra, India \\
+\end{tabular*}
+
+
+% ── Research Interests ──────────────────────────────────────────────────────
+\section{Research Interests}
+
+Agentic Systems and Harness Optimisation,\; Model Quantization and Efficient Inference,\;
+LLM/VLM Evaluation,\; and AI for Education
+
+
+% ── Research Experience ─────────────────────────────────────────────────────
+\section{Research Experience}
+
+\textbf{Research Intern} \hfill 07/2026\,--\,Present\\
+TIGER-Lab, University of Waterloo \hfill \textit{Waterloo, Canada (Remote)}
+\begin{itemize}
+  \item Advisor: Max Ku.
+  \item Building an iterative harness-improvement loop for code-based video
+        generation (Manim, HyperFrames) across open- and closed-source models,
+        improving on the pi agent harness baseline. Three agents divide the work:
+        a \emph{creator} writes the render code, an \emph{explorer} probes the
+        harness, and an \emph{evaluator} scores the result.
+  \item The explorer runs a genetic algorithm over combinations of prompts and
+        user-preference representations, selecting for the widest diversity of
+        behaviour changes at each step. It tests how well the harness follows a
+        3-tier, 14-dimension preference taxonomy (content, delivery, visual style).
+  \item Cut context bloat by 35\% through progressive disclosure, loading
+        render-API documentation and tools only when the agent needs them.
+  \item Evaluates rendered videos with a persona-conditioned VLM-as-judge.
+        Over the pi agent baseline: +11\% render success rate and a +4 judge score.
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Quantization Research} \hfill \textit{IEEE HiPC 2026}\\
+MIT World Peace University \hfill \textit{Pune, Maharashtra}
+\begin{itemize}
+  \item Co-authored a co-adaptive mixed-precision QAT method: a budgeted
+        controller computes a per-layer marginal KL-divergence signal
+        \emph{during} training and re-allocates weight precision (2/4/8-bit,
+        per-channel STE fake quantization, int8 activations) while the weights
+        are still learning.
+  \item At a 3-bit average budget it beats a post-hoc KL allocator by about 3$\times$
+        in perplexity on Mamba-130M (314 vs.\ 950), and the advantage transfers
+        to GPT-2 (56.4 vs.\ 145.1). The gain holds only below a 4-bit average;
+        at 4 bits and above, uniform quantization wins.
+\end{itemize}
+
+
+% ── Publications ────────────────────────────────────────────────────────────
+\section{Publications}
+
+\hangindent=1.6em\hangafter=1
+P2.\quad Shreya Mandekar, \textbf{Jayraj Kiran Ladkat}, Madhura Phatak,
+and Bhavana Tiple,
+``Co-Adaptation over Allocation: KL-Guided Mixed-Precision
+Quantization-Aware Training,''
+\textit{accepted poster},
+IEEE International Conference on High Performance Computing,
+Data, and Analytics (HiPC), 2026.
+\href{https://drive.google.com/file/d/1wYned37BXW-kTc7B7jNQFcwUzh66sxkG/view?usp=sharing}{[\faIcon{external-link-alt}\;Acceptance Proof]}
+
+\vspace{0.45em}
+
+\hangindent=1.6em\hangafter=1
+P1.\quad \textbf{Jayraj Kiran Ladkat} and Pranati Waghodekar,
+``Real-World Scalability of PostgreSQL: Practical Techniques
+Use Case Study,''
+in \textit{IEEE International Conference on Blockchain and
+Distributed Systems Security} (ICBDS 2025).
+\href{https://ieeexplore.ieee.org/document/11377486/}{[\faIcon{external-link-alt}\;IEEE~Xplore~11377486]}
+
+
+% ── Professional Experience ────────────────────────────────────────────────
+\section{Professional Experience}
+
+\textbf{Engineering Intern} \hfill 08/2025\,--\,12/2025\\
+Publicis Sapient \hfill \textit{Gurugram, Haryana}
+\begin{itemize}
+  \item Optimised an AI agent data-generation pipeline: reduced per-run
+        token usage, redesigned the help interface, and improved synthetic
+        dataset quality.
+  \item Extended an AI recruitment screening tool with request
+        prefetching, a responsive multi-device frontend, and structured
+        assessment logic, cutting evaluation turnaround and manual HR
+        review effort.
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Software Engineering Intern} \hfill 06/2025\,--\,08/2025\\
+Elixir AI \hfill \textit{Pune, Maharashtra}
+\begin{itemize}
+  \item Built the full-stack geospatial application (Flask, PostgreSQL/PostGIS,
+        React, Docker) for the \textit{Climate Smart Public Health Platform},
+        a Harvard University--Malagasy Ministry of Public Health collaboration.
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Cloud \& Full-Stack Intern} \hfill 01/2025\,--\,02/2025\\
+Centre for Development of Advanced Computing (C-DAC) \hfill \textit{Pune, Maharashtra}
+\begin{itemize}
+  \item Introduced NATS-based asynchronous messaging into the service
+        architecture, reducing request wait time under load.
+\end{itemize}
+
+
+% ── Selected Projects ──────────────────────────────────────────────────────
+\section{Selected Projects}
+
+\textbf{\href{https://github.com/jayraj-kl/dexterio}{Dexterio}%
+\,---\,Autonomous Educational Animation Generation Engine}
+\hfill 2026
+\begin{itemize}
+  \item Engineered an agentic RAG pipeline orchestrating multi-step lesson storyboard planning and modular Manim animation code generation grounded in course materials.
+  \item Architected a distributed worker fleet using Apache Kafka, Daytona/Docker remote VM sandboxes for safe code compilation, and PostgreSQL-backed LangGraph checkpointers for stateful thread resumption.
+\end{itemize}
+
+\vspace{0.35em}
+
+\textbf{\href{https://github.com/jayraj-kl/stud-ex}{StudEx}%
+\,---\,RAG Tutors for Core CS Subjects}
+\hfill 2024\,--\,2025
+\begin{itemize}
+  \item Built an educational platform with subject-specific chatbots (Theory of Computation, ML, Blockchain, Cloud) grounded in course PDFs via OpenAI embeddings and a Pinecone vector store (LangChain orchestration).
+\end{itemize}
+
+
+% ── Technical Skills ────────────────────────────────────────────────────────
+\section{Technical Skills}
+
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\small}r@{\hspace{1.2em}}X@{}}
+  Agentic systems: & Multi-agent harnesses, LangGraph, genetic/evolutionary prompt
+                     search, LLM/VLM-as-judge evaluation, progressive disclosure,
+                     agentic RAG (LangChain, Pinecone) \\[0.3em]
+  Quantization:    & Quantization-aware training, mixed-precision allocation,
+                     STE fake quantization, KL-based sensitivity analysis, PyTorch \\[0.3em]
+  Vision:          & VLM-based evaluation of rendered video \\[0.3em]
+  Languages:       & Python, TypeScript, JavaScript, SQL, C/C++ \\[0.3em]
+  Systems:         & Docker, Apache Kafka, NATS, PostgreSQL/PostGIS, AWS (ECS, S3),
+                     Flask, Node.js, React, Next.js, Git \\
+\end{tabularx}
+
+\end{document}
