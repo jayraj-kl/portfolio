@@ -233,10 +233,13 @@ export function Contributions({ username }: { username: string }) {
 // this rather than a scroll listener: the browser moves it with the scroll itself, so it never
 // lags a frame behind and shudders as it parks.
 // On opening it springs up from below and a shine runs once around its edge, as on yo-hackyfolio.
+// Once the footer arrives it steps back down the way it came: the footer's slab carries the same
+// links, so the end of the page lists them once, and keyboard users don't tab through them twice.
 export function Dock() {
+  const retired = useFooterInView();
   return (
     <div className={styles.dockRail}>
-      <div className={styles.dock}>
+      <div className={styles.dock} data-retired={retired || undefined} inert={retired}>
         <motion.div
           className={styles.dockPop}
           initial={{ opacity: 0, y: 60, scale: 0.8 }}
@@ -251,4 +254,20 @@ export function Dock() {
       </div>
     </div>
   );
+}
+
+// True from the moment the footer's lead-in band enters the screen, and for as long as the
+// reader stays at or below it.
+function useFooterInView() {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const lead = document.querySelector("[data-dock-retire]");
+    if (!lead) return;
+    const io = new IntersectionObserver(([e]) => {
+      setInView(e.isIntersecting || e.boundingClientRect.top < 0);
+    });
+    io.observe(lead);
+    return () => io.disconnect();
+  }, []);
+  return inView;
 }

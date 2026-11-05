@@ -7,8 +7,8 @@ import type { Link } from "@/lib/content";
 import { Clock } from "./interactive";
 import styles from "./home.module.css";
 
-// After micro and helixa, in the "sss" recipe's CRT style: a sign-off on the page's paper,
-// then a full-bleed scene surfacing out of it in scanlines.
+// After micro and helixa, in the "sss" recipe's CRT style: a full-bleed scene surfacing out of
+// the page in scanlines, with the sign-off on a notched slab across its bottom edge.
 export function SiteFooter({
   name,
   fullName,
@@ -30,35 +30,13 @@ export function SiteFooter({
 }) {
   const year = new Date().getFullYear();
 
-  // The scene sits outside the <footer> so the dock, between them, is a child of the page root:
-  // a sticky element only travels within its parent, and the root spans the whole page.
+  // The dock sits before the scene, as a child of the page root: a sticky element only travels
+  // within its parent, and the root spans the whole page.
   return (
     <>
-      <footer className={styles.siteFooter}>
-        <div className={styles.footTop}>
-          <div className={styles.footHead}>
-            <p className={styles.footName}>{name}.</p>
-            <p className={styles.footAside}>
-              {location} · <Clock timeZone={timeZone} /> IST
-            </p>
-          </div>
-          <div className={styles.footMeta}>
-            <ul className={styles.footLinks}>
-              {socials.map((l) => (
-                <li key={l.href}>
-                  <a href={l.href} target="_blank" rel="noreferrer">
-                    {l.label}
-                    <ArrowUpRight size={12} strokeWidth={2} aria-hidden="true" />
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <p className={styles.footCopy}>
-              © {year} {fullName}
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* A short band of bare paper between the last section and the scene, so the picture
+          doesn't arrive on the heels of the contact block. Reaching it retires the dock. */}
+      <div className={styles.footLead} data-dock-retire aria-hidden="true" />
 
       {/* The floating dock parks above this edge rather than covering the scene. */}
       {dock}
@@ -82,6 +60,33 @@ export function SiteFooter({
             <AsciiArt className={styles.footImage} />
           )}
         </div>
+
+        {/* The sign-off: a slab over the scene's bottom edge, a trapezoid notched into its top. */}
+        <footer className={styles.siteFooter}>
+          <div className={styles.footTop}>
+            <div className={styles.footHead}>
+              <p className={styles.footName}>{name}.</p>
+              <p className={styles.footAside}>
+                {location} · <Clock timeZone={timeZone} /> IST
+              </p>
+            </div>
+            <div className={styles.footMeta}>
+              <ul className={styles.footLinks}>
+                {socials.map((l) => (
+                  <li key={l.href}>
+                    <a href={l.href} target="_blank" rel="noreferrer">
+                      {l.label}
+                      <ArrowUpRight size={12} strokeWidth={2} aria-hidden="true" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <p className={styles.footCopy}>
+                © {year} {fullName}
+              </p>
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   );

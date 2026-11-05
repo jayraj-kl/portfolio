@@ -1458,13 +1458,45 @@ a.arrowCell:hover svg {
 
 /* ---------- Footer (micro's sign-off, the "sss" CRT scene) ---------- */
 
+/* The slab over the scene's bottom quarter. A trapezoid is notched down into the middle of its
+   top edge, wide at the top and narrowing, so the picture shows through it. Its sides keep one
+   slope at every width (1.9px across for each 1px down); on wide screens it opens exactly as
+   wide as the page's column, so the frame above carries down into the picture. */
 .siteFooter {
-  border-top: 1px solid var(--rule);
-  background: var(--paper);
+  --notch-d: clamp(20px, 2.2vw, 30px); /* notch depth */
+  --notch-top: 36%; /* notch width at the slab's top edge */
+  --notch-bot: calc(var(--notch-top) - 3.8 * var(--notch-d)); /* its width at the floor */
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 26%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: var(--paper-2);
+  clip-path: polygon(
+    0 0,
+    calc(50% - var(--notch-top) / 2) 0,
+    calc(50% - var(--notch-bot) / 2) var(--notch-d),
+    calc(50% + var(--notch-bot) / 2) var(--notch-d),
+    calc(50% + var(--notch-top) / 2) 0,
+    100% 0,
+    100% 100%,
+    0 100%
+  );
 }
 
+@media (min-width: 1024px) {
+  .siteFooter {
+    --notch-top: var(--col);
+  }
+}
+
+/* The slab's spacing sits on an 8px rhythm. */
 .footTop {
-  padding: clamp(48px, 6vw, 88px) clamp(16px, 4vw, 48px) clamp(20px, 2.4vw, 28px);
+  padding: calc(var(--notch-d) + 16px) clamp(16px, 4vw, 48px) 24px;
 }
 
 .footHead {
@@ -1473,14 +1505,14 @@ a.arrowCell:hover svg {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px 24px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--rule);
 }
 
 .footName {
   font-family: var(--home-display), sans-serif;
   font-weight: 500;
-  font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4.5rem);
+  font-size: clamp(1.75rem, 1.1rem + 2.2vw, 3.25rem);
   line-height: 1;
   letter-spacing: -0.035em;
 }
@@ -1496,8 +1528,8 @@ a.arrowCell:hover svg {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 24px;
-  padding-top: 12px;
+  gap: 8px 24px;
+  padding-top: 16px;
 }
 
 .footLinks {
@@ -1531,6 +1563,14 @@ a.arrowCell:hover svg {
   color: var(--grey);
 }
 
+/* The lead-in: a short breath of bare paper under the plate's closing hairline. The scene's own
+   scanline fade does the easing in, and the dock has retired by here, so it holds nothing. */
+.footLead {
+  height: 48px;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+}
+
 /* The scene: full bleed, surfacing out of the paper, the wordmark in front. */
 .footScene {
   --fade: clamp(120px, 13vw, 210px);
@@ -1538,6 +1578,28 @@ a.arrowCell:hover svg {
   height: clamp(360px, 44vw, 680px);
   overflow: hidden;
   background: var(--paper);
+}
+
+/* On phones the slab's text stacks, so the scene grows to keep the slab near a third of it; the
+   crop shifts left onto the neon signs, the links get thumb-sized hit areas without moving, and
+   the name's tracking eases at its smaller size. */
+@media (max-width: 640px) {
+  .footScene {
+    height: 540px;
+  }
+
+  .footScene .footImage {
+    object-position: 22% 62%;
+  }
+
+  .footLinks a {
+    padding-block: 14px;
+    margin-block: -14px;
+  }
+
+  .footName {
+    letter-spacing: -0.02em;
+  }
 }
 
 /* Near the top only every scanline of the picture shows, thinly; lower down the gaps fill in.
@@ -1646,6 +1708,26 @@ a.arrowCell:hover svg {
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
+  transition:
+    opacity 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    translate 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* At the footer the dock steps back down the way it came in, then leaves the tab order. */
+.dock[data-retired] {
+  opacity: 0;
+  translate: 0 24px;
+  pointer-events: none;
+  transition:
+    opacity 200ms cubic-bezier(0.64, 0, 0.78, 0),
+    translate 200ms cubic-bezier(0.64, 0, 0.78, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock,
+  .dock[data-retired] {
+    translate: none;
+  }
 }
 
 /* ---------- Notch: section navigation at the top ---------- */
