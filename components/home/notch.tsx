@@ -2,8 +2,10 @@
 
 import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from "motion/react";
 import { useCallback, useEffect, useId, useRef, useState, type MouseEvent } from "react";
+import { Check } from "lucide-react";
 import { TextMorph } from "torph/react";
-import { INTRO_ID, type NotchSection } from "./notch-sections";
+import { ProgressiveBlur } from "@/components/ui/progressive-blur";
+import { INTRO_ID, NOTCH_STATUS_EVENT, STATUS_HOLD_MS, type NotchSection } from "./notch-sections";
 import styles from "./home.module.css";
 
 const SPRING = { type: "spring", stiffness: 420, damping: 34, mass: 0.9 } as const;
@@ -61,6 +63,30 @@ function useActiveSection(sections: NotchSection[]) {
   return active;
 }
 
+/** The latest status reported to the notch, cleared after STATUS_HOLD_MS. Ignored while `muted`. */
+function useNotchStatus(muted: boolean) {
+  const [status, setStatus] = useState<string | null>(null);
+  const mutedRef = useRef(muted);
+  useEffect(() => {
+    mutedRef.current = muted;
+  }, [muted]);
+  useEffect(() => {
+    let timer = 0;
+    const onStatus = (e: Event) => {
+      if (mutedRef.current) return;
+      setStatus((e as CustomEvent<string>).detail);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setStatus(null), STATUS_HOLD_MS);
+    };
+    window.addEventListener(NOTCH_STATUS_EVENT, onStatus);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener(NOTCH_STATUS_EVENT, onStatus);
+    };
+  }, []);
+  return [status, setStatus] as const;
+}
+
 function ProgressArc({ size = 20 }: { size?: number }) {
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 260, damping: 40, restDelta: 0.001 });
@@ -87,11 +113,13 @@ function ProgressArc({ size = 20 }: { size?: number }) {
 export function Notch({ sections }: { sections: NotchSection[] }) {
   const [open, setOpen] = useState(false);
   const scrolled = useScrolledPast(SHOW_AFTER);
-  // Never hide it while it's open.
-  const visible = scrolled || open;
+  const [status, setStatus] = useNotchStatus(open);
+  // Never hide it while it's open; a status brings it down even at the top of the page.
+  const visible = scrolled || open || status !== null;
   // "Sections" stays on the bar until the close has finished, so the label morph never changes
   // the notch's size in the middle of the close.
   const [titled, setTitled] = useState(false);
+  const [pressed, setPressed] = useState(false);
   const active = useActiveSection(sections);
   const reduce = useReducedMotion();
   const listId = useId();
@@ -143,14 +171,24 @@ export function Notch({ sections }: { sections: NotchSection[] }) {
   };
 
   const transition = reduce ? { duration: 0 } : SPRING;
+  // The closed pill dips while it is held, like the island it is modelled on. Open, it is a
+  // panel, and only its label dims (in the stylesheet).
+  const dip = pressed && !open && !reduce;
   const showTitle = reduce ? open : open || titled;
 
   const onToggle = () => {
+    setStatus(null);
     if (!open) setTitled(true);
     setOpen(!open);
   };
 
   return (
+    <>
+    {/* The scroll edge: the page softens as it passes under the top of the screen, where the
+        notch floats, and slides away with it. */}
+    <div className={`${styles.edge} ${styles.edgeTop}`} data-off={!visible || undefined} aria-hidden="true">
+      <ProgressiveBlur direction="top" blurLayers={5} blurIntensity={1.4} className={styles.edgeBlur} />
+    </div>
     <div className={styles.notchHost}>
       <AnimatePresence>
         {visible ? (
@@ -161,7 +199,9 @@ export function Notch({ sections }: { sections: NotchSection[] }) {
             className={styles.notchPop}
             // Drops in from above the edge, sharpening as it lands; leaves the same way.
             initial={{ opacity: 0, y: -28, scale: 0.92, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            // The filter is dropped once it lands: any filter on this wrapper would cut the
+            // notch's backdrop-filter off from the page behind it.
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
             exit={{ opacity: 0, y: -28, scale: 0.92, filter: "blur(6px)" }}
             transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 30 }}
           >
@@ -171,8 +211,12 @@ export function Notch({ sections }: { sections: NotchSection[] }) {
               className={`${styles.notch} ${open ? styles.notchOpen : ""}`}
               // 20px is a full pill at the closed height, so the corners ease rather than jump.
               initial={false}
-              animate={{ borderRadius: open ? 22 : 20 }}
-              transition={transition}
+              animate={{ borderRadius: open ? 22 : 20, scale: dip ? 0.95 : 1 }}
+              // Quick on the way down, a touch slower back; neither overshoots.
+              transition={{
+                ...transition,
+                scale: reduce ? { duration: 0 } : { type: "spring", bounce: 0, duration: dip ? 0.14 : 0.3 },
+              }}
               onLayoutAnimationComplete={() => {
                 if (!open) setTitled(false);
               }}
@@ -187,10 +231,33 @@ export function Notch({ sections }: { sections: NotchSection[] }) {
                 aria-expanded={open}
                 aria-controls={listId}
                 onClick={onToggle}
+                onPointerDown={() => setPressed(true)}
+                onPointerUp={() => setPressed(false)}
+                onPointerLeave={() => setPressed(false)}
+                onPointerCancel={() => setPressed(false)}
               >
-                <ProgressArc />
+                {/* The arc and the status tick share one slot and cross over in place. */}
+                <span className={styles.notchGlyph} aria-hidden="true">
+                  <motion.span
+                    className={styles.notchGlyphLayer}
+                    initial={false}
+                    animate={status ? { opacity: 0, scale: 0.6 } : { opacity: 1, scale: 1 }}
+                    transition={transition}
+                  >
+                    <ProgressArc />
+                  </motion.span>
+                  <motion.span
+                    className={`${styles.notchGlyphLayer} ${styles.notchTick}`}
+                    initial={false}
+                    animate={status ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.6 }}
+                    // A small overshoot, since it answers a click.
+                    transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 24 }}
+                  >
+                    <Check size={12} strokeWidth={3} />
+                  </motion.span>
+                </span>
                 <TextMorph as="span" className={styles.notchLabel} duration={420} ease={MORPH_EASE} locale="en">
-                  {showTitle ? "Sections" : label}
+                  {status && !open ? status : showTitle ? "Sections" : label}
                 </TextMorph>
                 <span className="sr-only">{open ? ", close the section list" : ", open the section list"}</span>
               </motion.button>
@@ -228,5 +295,6 @@ export function Notch({ sections }: { sections: NotchSection[] }) {
         ) : null}
       </AnimatePresence>
     </div>
+    </>
   );
 }

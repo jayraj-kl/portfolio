@@ -1,11 +1,27 @@
 "use client";
 
 import { ArrowUpRight, X } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+  type MotionStyle,
+} from "motion/react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import type { Experience } from "@/lib/content";
 import { range } from "./dates";
+import { project, rubberband, SPRING_FLICK, SPRING_UI } from "./motion";
 import { Logo } from "./parts";
 import styles from "./home.module.css";
 
@@ -13,6 +29,11 @@ import styles from "./home.module.css";
 // modal on their own layoutId, so the row unfolds into the detail rather than a box growing.
 
 const SPRING = { type: "spring", stiffness: 420, damping: 38 } as const;
+
+// Swipe to dismiss, where the modal fills the screen (the stylesheet's phone breakpoint).
+const PHONE = "(max-width: 640px)";
+const SWIPE_SLOP = 10; // px before a press on the header counts as a pull
+const SWIPE_AWAY = 0.33; // share of the screen the throw must be bound past to dismiss
 
 type Role = Experience & { logo: string | null };
 
@@ -67,10 +88,12 @@ export function PreviousRoles({ roles }: { roles: Role[] }) {
                   {e.title}
                 </motion.span>
               </span>
-              <span className={styles.roleWhen}>
+              {/* Tracked for position only: the row's box stretches on its way to and from the
+                  modal, and an untracked child would stretch with it. */}
+              <motion.span layout="position" transition={t} className={styles.roleWhen}>
                 <span className={styles.data}>{range(e.start, e.end)}</span>
                 <span className={styles.small}>{e.place}</span>
-              </span>
+              </motion.span>
               <motion.span layoutId={lid("pill", i)} transition={t} className={styles.rolePill}>
                 Details
               </motion.span>
@@ -83,7 +106,7 @@ export function PreviousRoles({ roles }: { roles: Role[] }) {
         ? createPortal(
             <AnimatePresence>
               {open !== null ? (
-                <RoleModal key={open} role={roles[open]} id={(p) => lid(p, open)} transition={t} onClose={() => setOpen(null)} />
+                <RoleModal key={open} role={roles[open]} id={(p) => lid(p, open)} transition={t} still={!!reduce} onClose={() => setOpen(null)} />
               ) : null}
             </AnimatePresence>,
             root,
@@ -97,11 +120,13 @@ function RoleModal({
   role: e,
   id,
   transition,
+  still,
   onClose,
 }: {
   role: Role;
   id: (part: string) => string;
   transition: object;
+  still: boolean;
   onClose: () => void;
 }) {
   const titleId = useId();
@@ -132,6 +157,58 @@ function RoleModal({
     };
   }, [onClose]);
 
+  // On phones the modal fills the screen, and its header is a handle: drag it down and the
+  // modal comes with the finger; let go and it either falls away or springs back, decided by
+  // where the throw would land rather than where the finger happened to lift.
+  const y = useMotionValue(0);
+  // As it leaves the top of the screen its top corners round off, so it reads as a sheet being
+  // pulled rather than the page sliding. The stylesheet uses this only where the modal is full-screen.
+  const pullRadius = useTransform(y, [0, 60], ["0px", "22px"]);
+  const swipe = useRef<{ id: number; anchor: number; moved: boolean; trail: { t: number; y: number }[] } | null>(null);
+  const settle = useRef<ReturnType<typeof animate> | null>(null);
+
+  const onGrab = (ev: ReactPointerEvent<HTMLDivElement>) => {
+    if (ev.button !== 0 || !window.matchMedia(PHONE).matches) return;
+    // Caught mid-spring, it carries on from where it is on screen.
+    settle.current?.stop();
+    swipe.current = { id: ev.pointerId, anchor: ev.clientY - y.get(), moved: y.get() !== 0, trail: [] };
+    ev.currentTarget.setPointerCapture(ev.pointerId);
+  };
+  const onPull = (ev: ReactPointerEvent<HTMLDivElement>) => {
+    const s = swipe.current;
+    if (!s || s.id !== ev.pointerId) return;
+    if (!s.moved) {
+      if (Math.abs(ev.clientY - s.anchor) < SWIPE_SLOP) return;
+      // Start from here, so the modal does not jump the slop it took to be sure.
+      s.moved = true;
+      s.anchor = ev.clientY;
+    }
+    const d = ev.clientY - s.anchor;
+    // Down, it follows the finger exactly. Up, there is nowhere to go, and it resists.
+    const next = d >= 0 ? d : -rubberband(-d, window.innerHeight);
+    y.set(next);
+    s.trail.push({ t: ev.timeStamp, y: next });
+    while (s.trail.length > 2 && s.trail[0].t < ev.timeStamp - 100) s.trail.shift();
+  };
+  const onRelease = (ev: ReactPointerEvent<HTMLDivElement>) => {
+    const s = swipe.current;
+    if (!s || s.id !== ev.pointerId) return;
+    swipe.current = null;
+    if (!s.moved) return;
+    const a = s.trail[0];
+    const b = s.trail[s.trail.length - 1];
+    const v = a && b && b.t > a.t && ev.timeStamp - b.t < 80 ? (b.y - a.y) / ((b.t - a.t) / 1000) : 0;
+    // Moving down (or resting) and bound for the lower part of the screen: it goes. The row
+    // then takes it from wherever it is and folds it back into place.
+    if (ev.type === "pointerup" && v >= 0 && y.get() + project(v) > window.innerHeight * SWIPE_AWAY) {
+      onClose();
+      return;
+    }
+    // Thrown back, it may overshoot a touch; let go at rest, it only settles.
+    const spring = Math.abs(v) > 50 ? { ...SPRING_FLICK, velocity: v } : SPRING_UI;
+    settle.current = animate(y, 0, still ? { duration: 0 } : spring);
+  };
+
   const fade = {
     initial: { opacity: 0 },
     animate: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } },
@@ -156,13 +233,20 @@ function RoleModal({
         aria-modal="true"
         aria-labelledby={titleId}
         className={styles.roleModal}
+        style={{ y, "--role-pull-r": pullRadius } as MotionStyle}
       >
         {/* On phones the modal fills the screen, so it needs its own way out. */}
         <motion.button {...fade} ref={closeRef} type="button" className={styles.roleClose} onClick={onClose} aria-label="Close">
           <X size={16} strokeWidth={1.75} aria-hidden="true" />
         </motion.button>
 
-        <div className={styles.roleHero}>
+        <div
+          className={styles.roleHero}
+          onPointerDown={onGrab}
+          onPointerMove={onPull}
+          onPointerUp={onRelease}
+          onPointerCancel={onRelease}
+        >
           {d?.image ? (
             // eslint-disable-next-line @next/next/no-img-element -- a picture of the work, shown as given
             <img className={styles.roleImage} src={d.image.src} alt={d.image.alt} />

@@ -109,8 +109,19 @@ export function WorkGrid({ items, categories }: { items: WorkItem[]; categories:
       <div className={styles.filters} role="group" aria-label="Filter projects by stack">
         {tabs.map((t) => (
           <button key={t} type="button" className={styles.filter} aria-pressed={active === t} onClick={() => setActive(t)}>
-            {t}
-            <span className={styles.filterCount}>{countFor(t)}</span>
+            {/* One thumb, shared across the segments: it travels from the old choice to the new. */}
+            {active === t ? (
+              <motion.span
+                layoutId="work-filter-thumb"
+                className={styles.filterThumb}
+                transition={{ type: "spring", bounce: 0.12, duration: 0.42 }}
+                aria-hidden="true"
+              />
+            ) : null}
+            <span className={styles.filterText}>
+              {t}
+              <span className={styles.filterCount}>{countFor(t)}</span>
+            </span>
           </button>
         ))}
         <span className="sr-only" role="status" aria-live="polite">

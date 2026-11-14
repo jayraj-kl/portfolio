@@ -73,14 +73,25 @@ export function useLiquidMetal(speed = LIQUID_METAL_SPEED.rest) {
 // Seen before the shader draws, or instead of it without WebGL.
 const FALLBACK = "linear-gradient(135deg, #f4f4f4 0%, #9a9a9a 35%, #ededed 55%, #7c7c7c 80%, #e6e6e6 100%)";
 
+// Cuts the metal down to the rim: everything inside the padding box is masked away.
+const RING_MASK: CSSProperties = {
+  WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+  WebkitMaskComposite: "xor",
+  mask: "linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)",
+};
+
 /**
  * Wraps an element in a liquid-metal rim: the shader fills the box behind it and the child sits
  * inset by `rim`, so only a thin animated band shows. The child brings its own background.
+ * `hollow` masks the metal to the rim alone, for a translucent child (glass) that would
+ * otherwise show the metal through its middle.
  */
 export function LiquidMetalBorder({
   children,
   radius,
   rim = 2,
+  hollow = false,
+  press = false,
   className,
   style,
 }: {
@@ -88,6 +99,9 @@ export function LiquidMetalBorder({
   /** Outer corner radius in px; the child's should be `radius - rim`. Use 9999 for a pill. */
   radius: number;
   rim?: number;
+  hollow?: boolean;
+  /** For a rim around one control: the metal races while the control is held down. */
+  press?: boolean;
   className?: string;
   style?: CSSProperties;
 }) {
@@ -98,12 +112,20 @@ export function LiquidMetalBorder({
       style={{ borderRadius: radius, padding: rim, ...style }}
       onPointerEnter={() => setSpeed(LIQUID_METAL_SPEED.hover)}
       onPointerLeave={() => setSpeed(LIQUID_METAL_SPEED.rest)}
+      onPointerDown={press ? () => setSpeed(LIQUID_METAL_SPEED.press) : undefined}
+      // A mouse is still over the rim after the press; a finger has gone.
+      onPointerUp={
+        press
+          ? (e) => setSpeed(e.pointerType === "mouse" ? LIQUID_METAL_SPEED.hover : LIQUID_METAL_SPEED.rest)
+          : undefined
+      }
+      onPointerCancel={press ? () => setSpeed(LIQUID_METAL_SPEED.rest) : undefined}
     >
       <div
         ref={ref}
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [&>canvas]:!absolute [&>canvas]:inset-0 [&>canvas]:!h-full [&>canvas]:!w-full"
-        style={{ borderRadius: radius, background: FALLBACK }}
+        style={{ borderRadius: radius, background: FALLBACK, ...(hollow ? { padding: rim, ...RING_MASK } : null) }}
       />
       {children}
     </div>

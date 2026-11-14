@@ -39,6 +39,10 @@
   --r-ctl: 8px;
   --r-chip: 6px;
   --cols: minmax(10px, 1fr) minmax(0, var(--col)) minmax(10px, 1fr);
+  /* Motion: the page's one ease-out, and how far a control dips under a press. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --press: 0.97;
+  --press-sm: 0.94;
 
   min-height: 100vh;
   background: var(--paper);
@@ -197,6 +201,43 @@ section.row > .cell {
   font-variant-numeric: tabular-nums;
 }
 
+/* The odometer: each digit is a 1.2em window onto a reel of 0–9 twice over. */
+.roll {
+  white-space: nowrap;
+}
+
+.rollWindow {
+  display: inline-block;
+  height: 1.2em;
+  line-height: 1.2;
+  /* clip, not hidden: hidden would move the window's baseline to its bottom edge and lift the
+     digits off the line. */
+  overflow: clip;
+  /* Digits fade as they pass the window's edges, like a wheel turning out of sight. */
+  -webkit-mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+}
+
+.rollReel {
+  display: flex;
+  flex-direction: column;
+}
+
+.rollReel > span {
+  height: 1.2em;
+  text-align: center;
+}
+
+.rollReel[data-rolling] {
+  transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rollReel[data-rolling] {
+    transition: none;
+  }
+}
+
 .grey {
   color: var(--grey);
 }
@@ -227,11 +268,15 @@ section.row > .cell {
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
   text-decoration-color: var(--rule-strong);
-  transition: text-decoration-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    text-decoration-color 160ms var(--ease-out),
+    opacity 240ms var(--ease-out);
 }
 
-.link:hover {
-  text-decoration-color: currentColor;
+@media (hover: hover) {
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
 }
 
 .arrow {
@@ -286,8 +331,10 @@ section.row > .cell {
   border: 1px solid var(--ink);
 }
 
-.btnPrimary:hover {
-  background: color-mix(in srgb, var(--ink) 88%, var(--paper));
+@media (hover: hover) {
+  .btnPrimary:hover {
+    background: color-mix(in srgb, var(--ink) 88%, var(--paper));
+  }
 }
 
 .btnAddr {
@@ -319,9 +366,11 @@ section.row > .cell {
   text-decoration: none;
 }
 
-.btnSecondary:hover {
-  border-color: var(--ink);
-  background: var(--paper);
+@media (hover: hover) {
+  .btnSecondary:hover {
+    border-color: var(--ink);
+    background: var(--paper);
+  }
 }
 
 .textBtn,
@@ -344,12 +393,16 @@ section.row > .cell {
   text-decoration-color: var(--rule-strong);
 }
 
-.textBtn:hover {
-  text-decoration-color: currentColor;
+@media (hover: hover) {
+  .textBtn:hover {
+    text-decoration-color: currentColor;
+  }
 }
 
 .toggle {
-  margin-top: 12px;
+  /* Padding takes the place of the margin above and is cancelled below: a 43px target. */
+  padding-block: 12px;
+  margin-bottom: -12px;
   font-family: var(--home-mono), monospace;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
@@ -357,8 +410,10 @@ section.row > .cell {
   color: var(--grey);
 }
 
-.toggle:hover {
-  color: var(--ink);
+@media (hover: hover) {
+  .toggle:hover {
+    color: var(--ink);
+  }
 }
 
 .toggle svg {
@@ -614,10 +669,12 @@ section.row > .cell {
   border-radius: var(--r-ctl);
 }
 
-.prevSum:hover .prevOrg {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1px;
+@media (hover: hover) {
+  .prevSum:hover .prevOrg {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
 }
 
 .prevMain,
@@ -645,8 +702,10 @@ section.row > .cell {
   transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.prevSum:hover .prevChev {
-  transform: translate(2px, -2px);
+@media (hover: hover) {
+  .prevSum:hover .prevChev {
+    transform: translate(2px, -2px);
+  }
 }
 
 /* ---------- Previous roles: rows that unfold into a modal (after Aceternity's expandable card) ---------- */
@@ -674,8 +733,10 @@ section.row > .cell {
   transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.roleRow:hover {
-  background: var(--paper-2);
+@media (hover: hover) {
+  .roleRow:hover {
+    background: var(--paper-2);
+  }
 }
 
 .roleRow:focus-visible {
@@ -710,15 +771,23 @@ section.row > .cell {
   color: var(--ink);
   text-decoration: none;
   transition:
-    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    background-color 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    scale 240ms var(--ease-out);
 }
 
-.roleRow:hover .rolePill,
 .rolePillSolid {
   background: var(--ink);
   border-color: var(--ink);
   color: var(--paper);
+}
+
+@media (hover: hover) {
+  .roleRow:hover .rolePill {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
 }
 
 .roleLayer {
@@ -730,10 +799,27 @@ section.row > .cell {
   padding: 24px 16px;
 }
 
+/* Dims and softens the page behind a role, so the card is the one sharp thing on screen.
+   The scrim fades in on opacity, which brings the blur in with it. */
 .roleScrim {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--ink) 22%, transparent);
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  backdrop-filter: blur(6px) saturate(120%);
+}
+
+/* Ink is light in dark mode, which would haze the page; the scrim dims with black instead. */
+:global(.dark) .roleScrim {
+  background: rgb(0 0 0 / 0.45);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .roleScrim {
+    background: color-mix(in srgb, var(--ink) 40%, transparent);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 .roleModal {
@@ -764,12 +850,29 @@ section.row > .cell {
   background: var(--paper);
   color: var(--ink);
   cursor: pointer;
+  transition:
+    scale 240ms var(--ease-out),
+    border-color 160ms var(--ease-out);
 }
 
-.roleClose:hover,
+/* 32px to look at, 44px to hit (the inset is measured from inside the 1px border). */
+.roleClose::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+}
+
 .roleClose:focus-visible {
   border-color: var(--ink);
   outline: none;
+}
+
+@media (hover: hover) {
+  .roleClose:hover {
+    border-color: var(--ink);
+    outline: none;
+  }
 }
 
 /* The header: a white banner (the logos' own ground, in both themes) that the logo fills, or the
@@ -831,6 +934,17 @@ section.row > .cell {
   justify-content: space-between;
   gap: 16px;
   padding: 18px 20px 0;
+}
+
+/* The name and title fly between the row and the modal on their own layoutIds. Each hugs its
+   words in both places, so the two boxes keep one shape and the text scales evenly in flight
+   instead of stretching to fill a wider box. */
+.roleRow .prevMain {
+  align-items: flex-start;
+}
+
+.roleHead .leadTitle {
+  justify-items: start;
 }
 
 .roleOrg {
@@ -916,11 +1030,40 @@ section.row > .cell {
     width: 100%;
     height: 100dvh;
     max-height: none;
-    border-radius: 0;
+    /* Square while it fills the screen; the top corners round as it is pulled down. */
+    border-radius: var(--role-pull-r, 0px) var(--role-pull-r, 0px) 0 0;
   }
 
   .roleModal .rolePill {
     display: inline-flex;
+  }
+
+  /* The header is the handle for swiping the modal away, so the browser leaves touches on it
+     alone; a grabber says so, as on a sheet. */
+  .roleHero {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+  }
+
+  .roleHero img {
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  .roleHero::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    z-index: 1;
+    width: 36px;
+    height: 5px;
+    border-radius: 3px;
+    translate: -50% 0;
+    background: rgb(0 0 0 / 0.24);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5);
   }
 }
 
@@ -969,8 +1112,9 @@ section.row > .cell {
   border-top: 1px solid var(--rule);
 }
 
-.tools[hidden] {
-  display: none;
+/* The full stack opens by height; a formatting context of its own keeps the list's margin inside. */
+.toolsWrap {
+  overflow: hidden;
 }
 
 .toolCol ul {
@@ -981,21 +1125,27 @@ section.row > .cell {
 
 /* ---------- Selected work (v2's card anatomy, in black and white) ---------- */
 
+/* A segmented control: one recessed track, one ink thumb that slides to the chosen segment. */
 .filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: inline-flex;
+  max-width: 100%;
+  gap: 2px;
+  padding: 3px;
+  border-radius: calc(var(--r-ctl) + 3px);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--ink) 10%, transparent);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .filter {
+  position: relative;
+  flex: none;
   border-radius: var(--r-ctl);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
+  min-height: 34px;
   padding: 0 12px;
-  border: 1px solid var(--rule-strong);
-  background: var(--paper);
+  border: 0;
+  background: transparent;
   color: var(--ink);
   font-family: var(--home-mono), monospace;
   font-size: 0.75rem;
@@ -1004,22 +1154,61 @@ section.row > .cell {
   cursor: pointer;
   transition:
     background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    scale 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.filter:hover {
-  border-color: var(--ink);
+@media (hover: hover) {
+  .filter:hover:not([aria-pressed="true"]) {
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+}
+
+.filter:is(:active, [data-pressed]) {
+  scale: 0.96;
 }
 
 .filter[aria-pressed="true"] {
-  background: var(--ink);
-  border-color: var(--ink);
   color: var(--paper);
+}
+
+.filterThumb {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-ctl);
+  background: var(--ink);
+  box-shadow: 0 3px 10px -4px rgb(0 0 0 / 0.4);
+}
+
+.filterText {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
 }
 
 .filterCount {
   opacity: 0.6;
   font-variant-numeric: tabular-nums;
+}
+
+/* Phones: every segment fits the column, so none hides off the track's edge. */
+@media (max-width: 480px) {
+  .filter {
+    padding: 0 8px;
+    letter-spacing: 0.03em;
+  }
+
+  .filterText {
+    gap: 5px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .filters {
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
 }
 
 .cards {
@@ -1223,16 +1412,20 @@ section.row > .cell {
   transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-a.arrowCell:hover {
-  background: color-mix(in srgb, var(--ink) 85%, var(--paper));
+@media (hover: hover) {
+  a.arrowCell:hover {
+    background: color-mix(in srgb, var(--ink) 85%, var(--paper));
+  }
 }
 
 a.arrowCell svg {
   transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-a.arrowCell:hover svg {
-  transform: translateX(3px);
+@media (hover: hover) {
+  a.arrowCell:hover svg {
+    transform: translateX(3px);
+  }
 }
 
 /* ---------- Publications ---------- */
@@ -1277,8 +1470,10 @@ a.arrowCell:hover svg {
   text-decoration-color: var(--rule-strong);
 }
 
-.titleLink:hover {
-  text-decoration-color: currentColor;
+@media (hover: hover) {
+  .titleLink:hover {
+    text-decoration-color: currentColor;
+  }
 }
 
 .authors {
@@ -1299,9 +1494,19 @@ a.arrowCell:hover svg {
   margin: 14px 0 12px;
 }
 
+/* Registered as a number so the clamp's fade can ease away as the text opens; without
+   @property the mask simply switches. */
+@property --home-expand-end {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
 .expand {
   max-height: 3.2em;
   overflow: hidden;
+  mask-image: linear-gradient(#000 45%, rgb(0 0 0 / var(--home-expand-end)));
+  transition: --home-expand-end 240ms var(--ease-out);
 }
 
 .expandOpen {
@@ -1309,7 +1514,7 @@ a.arrowCell:hover svg {
 }
 
 .expandFade {
-  mask-image: linear-gradient(#000 45%, transparent);
+  --home-expand-end: 0;
 }
 
 .pubLinks {
@@ -1475,7 +1680,11 @@ a.arrowCell:hover svg {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background: var(--paper-2);
+  /* Frosted glass over the city: the neon bleeds up through the sign-off as soft colour, so the
+     slab reads as a pane laid on the picture rather than a strip cut out of it. */
+  background: color-mix(in srgb, var(--paper-2) 66%, transparent);
+  -webkit-backdrop-filter: blur(28px) saturate(185%);
+  backdrop-filter: blur(28px) saturate(185%);
   clip-path: polygon(
     0 0,
     calc(50% - var(--notch-top) / 2) 0,
@@ -1506,7 +1715,16 @@ a.arrowCell:hover svg {
   justify-content: space-between;
   gap: 8px 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--rule);
+  /* A grey rule turns muddy on tinted glass; a share of ink keeps it a hairline on any colour. */
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .siteFooter {
+    background: var(--paper-2);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 .footName {
@@ -1555,8 +1773,10 @@ a.arrowCell:hover svg {
   text-underline-offset: 3px;
 }
 
-.footLinks a:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .footLinks a:hover {
+    text-decoration: underline;
+  }
 }
 
 .footCopy {
@@ -1730,6 +1950,49 @@ a.arrowCell:hover svg {
   }
 }
 
+/* ---------- Scroll edges: the page softens where floating glass sits over it ---------- */
+
+/* Only where the notch and dock float, and only while they're out. They slide away rather than
+   fade: a half-transparent parent would cut its blur layers off from the page behind. */
+.edge {
+  position: fixed;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  transition: translate 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.edgeTop {
+  top: 0;
+  z-index: 59;
+  height: 72px;
+}
+
+.edgeTop[data-off] {
+  translate: 0 -100%;
+}
+
+.edgeBottom {
+  bottom: 0;
+  z-index: 49;
+  height: 104px;
+}
+
+.edgeBottom[data-off] {
+  translate: 0 100%;
+}
+
+.edgeBlur {
+  position: absolute;
+  inset: 0;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .edge {
+    display: none;
+  }
+}
+
 /* ---------- Notch: section navigation at the top ---------- */
 
 /* Centred with flex rather than a transform, which motion's enter animation would overwrite. */
@@ -1753,9 +2016,34 @@ a.arrowCell:hover svg {
   position: relative;
   pointer-events: auto;
   overflow: hidden;
-  background: var(--ink);
+  /* Glass of ink: the page reads through it as frosted grain, the way an island floats over
+     whatever is behind it. A half-pixel rim and a lit top edge give the material its edge. */
+  background: color-mix(in srgb, var(--ink) 84%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
   color: var(--paper);
-  box-shadow: 0 10px 28px -14px rgb(0 0 0 / 0.45);
+  box-shadow:
+    inset 0 0 0 0.5px color-mix(in srgb, var(--paper) 16%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--paper) 12%, transparent),
+    0 10px 28px -14px rgb(0 0 0 / 0.45);
+}
+
+/* Glass gives way to the solid plate when the reader asks for less transparency or more contrast. */
+@media (prefers-reduced-transparency: reduce) {
+  .notch {
+    background: var(--ink);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .notch {
+    background: var(--ink);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: inset 0 0 0 1px var(--paper);
+  }
 }
 
 .notchOpen {
@@ -1788,7 +2076,29 @@ a.arrowCell:hover svg {
 }
 
 .notchArc {
+  display: block;
+}
+
+/* One 20px slot for the progress arc and the status tick. */
+.notchGlyph {
+  position: relative;
   flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.notchGlyphLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.notchTick {
+  inset: 1px;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .notchArcTrack,
@@ -1822,7 +2132,7 @@ a.arrowCell:hover svg {
   gap: 10px;
   padding: 9px 10px;
   border-radius: 12px;
-  color: color-mix(in srgb, var(--paper) 66%, transparent);
+  color: color-mix(in srgb, var(--paper) 74%, transparent);
   font: 500 0.9375rem/1.2 var(--home-sans), sans-serif;
   text-decoration: none;
   transition:
@@ -1830,11 +2140,18 @@ a.arrowCell:hover svg {
     color 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.notchLink:hover,
 .notchLink:focus-visible {
   background: color-mix(in srgb, var(--paper) 10%, transparent);
   color: var(--paper);
   outline: none;
+}
+
+@media (hover: hover) {
+  .notchLink:hover {
+    background: color-mix(in srgb, var(--paper) 10%, transparent);
+    color: var(--paper);
+    outline: none;
+  }
 }
 
 .notchLink[aria-current] {
@@ -1935,23 +2252,81 @@ a.arrowCell:hover svg {
   border-radius: 9999px;
 }
 
-/* The liquid-metal rim around it is the dock's edge. */
+/* The liquid-metal rim around it is the dock's edge; inside it, frosted paper, so the page
+   passes under the dock as a soft blur instead of stopping at a white bar. */
+.dockDesktop,
+.dockMobile > button {
+  background: color-mix(in srgb, var(--paper) 64%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+}
+
 .dockDesktop {
   border-radius: 9999px;
-  background: var(--paper);
   border: 0;
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--paper) 70%, transparent);
 }
 
+/* Hollow rings on the glass: a second light layer on top of it would muddy the blur. */
 .dockDesktop [data-dock-item] > div {
   border-radius: 9999px;
-  background: var(--paper);
-  border: 1px solid var(--rule-strong);
-  transition: border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--ink) 24%, transparent);
+  transition:
+    border-color 160ms var(--ease-out),
+    background-color 160ms var(--ease-out),
+    scale 240ms var(--ease-out);
 }
 
-.dockDesktop [data-dock-item] > div:hover {
-  border-color: var(--ink);
+@media (hover: hover) {
+  .dockDesktop [data-dock-item] > div:hover {
+    border-color: var(--ink);
+    background: color-mix(in srgb, var(--paper) 55%, transparent);
+  }
+}
+
+/* The theme and QR buttons are only as big as their icons; this spreads each one's hit area
+   over the whole ring around it (always twice the icon), and over the 40px disc on phones. */
+.dock [data-dock-item] button {
+  position: relative;
+}
+
+.dock [data-dock-item] button::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  border-radius: 50%;
+}
+
+.dockMobile [data-dock-item] button::after {
+  inset: -75%;
+}
+
+.dockMobile [data-dock-item],
+.dockMobile > button {
+  transition: scale 240ms var(--ease-out);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .dockDesktop,
+  .dockMobile > button {
+    background: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .dockDesktop,
+  .dockMobile > button {
+    background: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .dockDesktop [data-dock-item] > div {
+    border-color: var(--ink);
+  }
 }
 
 .dockDesktop [data-dock-item] > div > div[class*="-top-8"] {
@@ -1963,15 +2338,15 @@ a.arrowCell:hover svg {
   letter-spacing: 0.04em;
 }
 
-.dockMobile [data-dock-item],
-.dockMobile > button {
+.dockMobile [data-dock-item] {
   border-radius: 9999px;
   background: var(--paper);
   border: 1px solid var(--ink);
 }
 
-/* The phone dock's toggle sits inside the rim; its pop-up links keep their own edge. */
+/* The phone dock's toggle sits inside the rim, on glass; its pop-up links keep their own edge. */
 .dockMobile > button {
+  border-radius: 9999px;
   border: 0;
 }
 
@@ -2127,4 +2502,140 @@ a.arrowCell:hover svg {
   width: min(100%, var(--col));
   margin-inline: auto;
   padding: var(--pad);
+}
+
+/* ---------- Press: every control answers the touch-down, before its result arrives ---------- */
+
+/* Each control has a press state of its own now, so the browser's grey tap flash would double it. */
+.root :where(a, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* A control is pressed when the browser says so (:active) or when PressFeedback has marked it
+   (data-pressed), which on touch comes first: at the touch-down, where :active waits for the lift. */
+
+/* Buttons dip. `scale` is its own property, so it never fights a transform set elsewhere. Down is
+   quick; the way back is the page's ease-out. On a metal rim the class sits on the rim, and
+   :has() finds the pressed button inside it, so rim and button dip as one piece. */
+.press {
+  transition:
+    scale 240ms var(--ease-out),
+    opacity 240ms var(--ease-out),
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out);
+}
+
+.press:is(:active, [data-pressed], :has([data-pressed])) {
+  scale: var(--press);
+  transition-duration: 100ms;
+}
+
+/* Small targets dip a little further, or the change is too slight to see. */
+.roleClose:is(:active, [data-pressed]),
+a.rolePillSolid:is(:active, [data-pressed]) {
+  scale: var(--press-sm);
+  transition-duration: 100ms;
+}
+
+.dockDesktop [data-dock-item]:is(:active, [data-pressed], :has([data-pressed])) > div,
+.dockMobile [data-dock-item]:is(:active, [data-pressed], :has([data-pressed])),
+.dockMobile > button:is(:active, [data-pressed]) {
+  scale: 0.92;
+  transition-duration: 100ms;
+}
+
+/* Wide surfaces darken instead: 3% of a full-width row is a jump, not a dip. */
+.roleRow:is(:active, [data-pressed]) {
+  background: color-mix(in srgb, var(--ink) 9%, var(--paper));
+  transition-duration: 80ms;
+}
+
+.roleRow:is(:active, [data-pressed]) .rolePill {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.notchLink:is(:active, [data-pressed]) {
+  background: color-mix(in srgb, var(--paper) 20%, transparent);
+  color: var(--paper);
+  transition-duration: 80ms;
+}
+
+/* The notch's own dip is a spring in notch.tsx; its label dims with it, and alone when the
+   list is open or motion is reduced. */
+.notchLabel {
+  transition: opacity 240ms var(--ease-out);
+}
+
+.notchBar:is(:active, [data-pressed]) .notchLabel {
+  opacity: 0.6;
+  transition-duration: 80ms;
+}
+
+a.arrowCell:is(:active, [data-pressed]) {
+  background: color-mix(in srgb, var(--ink) 74%, var(--paper));
+  transition-duration: 80ms;
+}
+
+a.arrowCell:is(:active, [data-pressed]) svg {
+  transform: translateX(5px);
+  transition-duration: 100ms;
+}
+
+/* Text controls dim. */
+.titleLink,
+.textBtn,
+.toggle,
+.footLinks a {
+  transition: opacity 240ms var(--ease-out);
+}
+
+.link:is(:active, [data-pressed]),
+.titleLink:is(:active, [data-pressed]),
+.textBtn:is(:active, [data-pressed]),
+.toggle:is(:active, [data-pressed]),
+.footLinks a:is(:active, [data-pressed]) {
+  opacity: 0.55;
+  transition-duration: 80ms;
+}
+
+/* The copy glyph and its tick share one cell and cross over in place, as in the notch. */
+.swap {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+
+.swap > span {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No movement, but never no answer: a press dims instead of dipping. */
+  .press:is(:active, [data-pressed], :has([data-pressed])),
+  .roleClose:is(:active, [data-pressed]),
+  a.rolePillSolid:is(:active, [data-pressed]),
+  .filter:is(:active, [data-pressed]),
+  .dockDesktop [data-dock-item]:is(:active, [data-pressed], :has([data-pressed])) > div,
+  .dockMobile [data-dock-item]:is(:active, [data-pressed], :has([data-pressed])),
+  .dockMobile > button:is(:active, [data-pressed]) {
+    scale: none;
+    opacity: 0.8;
+  }
+
+  a.arrowCell:is(:active, [data-pressed]) svg {
+    transform: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .press:is(:active, [data-pressed], :has([data-pressed])),
+  .roleRow:is(:active, [data-pressed]),
+  .roleClose:is(:active, [data-pressed]) {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
 }

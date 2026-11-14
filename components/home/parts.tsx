@@ -3,11 +3,14 @@
 import { FloatingDock } from "@/components/ui/floating-dock";
 import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import { LiquidMetalBorder } from "@/components/ui/liquid-metal-border";
+import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { links } from "@/lib/constants";
 import { ChevronDown } from "lucide-react";
-import { motion } from "motion/react";
+import { animate, motion } from "motion/react";
 import dynamic from "next/dynamic";
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
+import { SPRING_UI, useReducedMotionSafe } from "./motion";
 import { useDark } from "./theme";
 import styles from "./home.module.css";
 
@@ -55,22 +58,18 @@ export function Logo({ name, src }: { name: string; src: string | null }) {
 
 type Skill = { name: string; slug: string };
 
-const REDUCE = "(prefers-reduced-motion: reduce)";
+// The marks kept under public/stack/ in their real colours. Simple Icons draws every brand as one
+// flat silhouette, which is right for the dark theme's ink but wrong for a logo with several
+// colours (Python, Linux, Hugging Face) once it's shown in "its" colour.
+const COLOUR = new Set([
+  "python", "typescript", "javascript", "c", "cplusplus", "react", "nextdotjs", "tailwindcss", "framer",
+  "fastapi", "django", "flask", "nodedotjs", "postgresql", "mongodb", "redis", "firebase", "docker",
+  "kubernetes", "prometheus", "grafana", "vercel", "git", "github", "linux", "huggingface",
+  "tensorflow", "pytorch", "scikitlearn", "numpy", "pandas",
+]);
 
-// Hydrates as "motion allowed" (the server's answer), then follows the media query.
-function useReducedMotionSafe() {
-  return useSyncExternalStore(
-    (onChange) => {
-      const mq = window.matchMedia(REDUCE);
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
-    },
-    () => window.matchMedia(REDUCE).matches,
-    () => false,
-  );
-}
-
-// With no hex the CDN serves the brand's own colour.
+// With a hex, the CDN's silhouette in that colour; with none, the real mark, or failing that the
+// silhouette in the brand's own colour.
 function StackIcon({ skill, hex }: { skill: Skill; hex?: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
@@ -84,7 +83,11 @@ function StackIcon({ skill, hex }: { skill: Skill; hex?: string }) {
     // eslint-disable-next-line @next/next/no-img-element -- remote SVG icon recoloured per theme by the CDN
     <img
       className={styles.stackIcon}
-      src={`https://cdn.simpleicons.org/${skill.slug}${hex ? `/${hex}` : ""}`}
+      src={
+        !hex && COLOUR.has(skill.slug)
+          ? `/stack/${skill.slug}.svg`
+          : `https://cdn.simpleicons.org/${skill.slug}${hex ? `/${hex}` : ""}`
+      }
       alt={skill.name}
       title={skill.name}
       width={30}
@@ -131,18 +134,30 @@ export function TechStack({ groups }: { groups: { name: string; skills: Skill[] 
         {open ? "Hide full stack" : "View full stack"}
         <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" className={open ? styles.chevOpen : undefined} />
       </button>
-      <div id={id} hidden={!open} className={styles.tools}>
-        {groups.map((g) => (
-          <div key={g.name} className={styles.toolCol}>
-            <h3 className={styles.miniLabel}>{g.name}</h3>
-            <ul>
-              {g.skills.map((s) => (
-                <li key={s.slug}>{s.name}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+      {/* Grows out from under its toggle, so it is plain where the list came from and what it
+          pushed down. A second click partway reverses from where it is. Closed, it is inert:
+          out of the tab order and unread, as `hidden` kept it. */}
+      <motion.div
+        id={id}
+        className={styles.toolsWrap}
+        inert={!open}
+        initial={false}
+        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+        transition={reduce ? { height: { duration: 0 }, opacity: { duration: 0.15 } } : SPRING_UI}
+      >
+        <div className={styles.tools}>
+          {groups.map((g) => (
+            <div key={g.name} className={styles.toolCol}>
+              <h3 className={styles.miniLabel}>{g.name}</h3>
+              <ul>
+                {g.skills.map((s) => (
+                  <li key={s.slug}>{s.name}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
@@ -155,6 +170,36 @@ export function Expand({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [overflows, setOverflows] = useState(false);
   const id = useId();
+  const reduce = useReducedMotionSafe();
+  const run = useRef<ReturnType<typeof animate> | null>(null);
+
+  // The clamp and its release are both CSS rest states (a max-height, or none), so the height
+  // is animated by hand between them: from wherever the block is on screen right now, which
+  // makes a second click partway reverse in place, to where the new state leaves it.
+  const toggle = () => {
+    const el = ref.current;
+    const next = !open;
+    if (!el || reduce) {
+      setOpen(next);
+      return;
+    }
+    const from = el.getBoundingClientRect().height;
+    run.current?.stop();
+    el.style.height = "";
+    el.style.maxHeight = "";
+    flushSync(() => setOpen(next));
+    const to = el.getBoundingClientRect().height;
+    if (Math.abs(to - from) < 1) return;
+    el.style.maxHeight = "none";
+    const anim = animate(el, { height: [from, to] }, SPRING_UI);
+    run.current = anim;
+    anim.then(() => {
+      if (run.current !== anim) return;
+      run.current = null;
+      el.style.height = "";
+      el.style.maxHeight = "";
+    });
+  };
 
   useEffect(() => {
     const el = ref.current;
@@ -180,7 +225,7 @@ export function Expand({ children }: { children: ReactNode }) {
           className={styles.toggle}
           aria-expanded={open}
           aria-controls={id}
-          onClick={() => setOpen((o) => !o)}
+          onClick={toggle}
         >
           {open ? "View less" : "View more"}
           <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" className={open ? styles.chevOpen : undefined} />
@@ -238,21 +283,28 @@ export function Contributions({ username }: { username: string }) {
 export function Dock() {
   const retired = useFooterInView();
   return (
+    <>
+    {/* The bottom scroll edge, under the dock; it leaves with the dock at the footer. */}
+    <div className={`${styles.edge} ${styles.edgeBottom}`} data-off={retired || undefined} aria-hidden="true">
+      <ProgressiveBlur direction="bottom" blurLayers={5} blurIntensity={1.6} className={styles.edgeBlur} />
+    </div>
     <div className={styles.dockRail}>
       <div className={styles.dock} data-retired={retired || undefined} inert={retired}>
         <motion.div
           className={styles.dockPop}
           initial={{ opacity: 0, y: 60, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 15, delay: 0.35 }}
+          // Nothing threw it, so it settles with only a trace of overshoot.
+          transition={{ type: "spring", bounce: 0.15, duration: 0.5, delay: 0.35 }}
         >
-          <LiquidMetalBorder radius={9999}>
+          <LiquidMetalBorder radius={9999} hollow>
             <FloatingDock items={links} desktopClassName={styles.dockDesktop} mobileClassName={styles.dockMobile} />
           </LiquidMetalBorder>
           <span className={styles.dockShine} aria-hidden="true" />
         </motion.div>
       </div>
     </div>
+    </>
   );
 }
 

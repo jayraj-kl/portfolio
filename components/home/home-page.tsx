@@ -17,7 +17,7 @@ import {
   PROJECT_FIELD_DESCRIPTIONS,
 } from "@/components/home/halftone";
 import { HeroBust } from "@/components/home/hero-bust";
-import { Clock, CopyText, EmailButton } from "@/components/home/interactive";
+import { Clock, CopyText, EmailButton, PressFeedback } from "@/components/home/interactive";
 import { Contributions, Dock, Expand, Logo, TechStack } from "@/components/home/parts";
 import { LiquidMetalBorder } from "@/components/ui/liquid-metal-border";
 import { month, range } from "@/components/home/dates";
@@ -503,7 +503,7 @@ export function HomePage({ profile }: { profile: Profile }) {
             <HairlineFigure name="pokeball" />
             <div className={`${styles.actions} ${styles.actionsLeft} ${styles.closeActions}`}>
               <EmailButton email={shared.email} />
-              <LiquidMetalBorder radius={10}>
+              <LiquidMetalBorder radius={10} press className={styles.press}>
                 <a
                   className={`${styles.btnSecondary} ${styles.onMetal}`}
                   href={c.cv.href}
@@ -520,7 +520,7 @@ export function HomePage({ profile }: { profile: Profile }) {
               </LiquidMetalBorder>
               {shared.calendarUrl ? (
                 <a
-                  className={styles.btnSecondary}
+                  className={`${styles.btnSecondary} ${styles.press}`}
                   href={shared.calendarUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -549,6 +549,7 @@ export function HomePage({ profile }: { profile: Profile }) {
       />
 
       <Notch sections={notchSections} />
+      <PressFeedback />
     </div>
   );
 }

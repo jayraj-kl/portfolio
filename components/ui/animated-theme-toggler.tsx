@@ -27,6 +27,15 @@ export const AnimatedThemeToggler = ({
   const toggleTheme = useCallback(async () => {
     if (!buttonRef.current) return;
 
+    // Without view transitions, or under reduced motion, the theme simply changes.
+    if (
+      typeof document.startViewTransition !== "function" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setTheme(theme === "dark" ? "light" : "dark");
+      return;
+    }
+
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
@@ -79,6 +88,7 @@ export const AnimatedThemeToggler = ({
         className,
       )}
       type="button"
+      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
       {...props}
     >
       <svg

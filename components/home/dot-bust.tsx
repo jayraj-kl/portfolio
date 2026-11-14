@@ -2,7 +2,9 @@
 
 // The 3D take on the dot-matrix avatar: a GLB bust rendered with three.js into an offscreen target,
 // then drawn as one dot per cell by the shader in dot-shader.ts. The bust sways slowly and turns
-// freely when dragged sideways; fast pointer movement scrambles the dots and a tap throws a ring.
+// freely when dragged sideways: it stays under the hand, coasts on when thrown, and turns back to
+// face front once it has been left alone. Fast pointer movement scrambles the dots and a tap
+// throws a ring.
 
 import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
 import * as THREE from "three";
@@ -10,6 +12,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { useDark } from "@/components/home/theme";
 import { INK_DARK, INK_LIGHT } from "@/components/home/halftone";
+import { project } from "@/components/home/motion";
 import {
   INTRO_CELL,
   REVEAL_MS,
@@ -23,11 +26,23 @@ import {
 
 export type DotBustHandle = { replay: () => void };
 
-// Turning works like three.js OrbitControls held level: a drag the canvas height long is one full
-// turn, with no limit, and the turn trails the pointer and glides to a stop (DAMPING per 60 Hz frame).
+// Turning: a drag the canvas height long is one full turn, with no limit. While held the bust stays
+// under the hand (TRACK closes half the gap each 60 Hz frame, about a frame behind). On release it
+// keeps the hand's speed and coasts to where a scroll with that speed would have stopped: Apple's
+// projection, v * d / (1 - d) per millisecond, with GLIDE as the matching decay (0.998 per ms is a
+// half-second time constant), so the first coasting frame moves exactly as fast as the hand did.
 const DRAG_TURN = Math.PI * 2;
-const DAMPING = 0.05;
-const DRAG_SLOP = 6; // px before a press counts as a drag rather than a tap
+const TRACK = 0.5;
+const GLIDE = 0.033;
+const VEL_WINDOW = 100; // ms of recent movement the release speed is read from
+const VEL_STALE = 80; // ms without movement before a release counts as a stop, not a throw
+const MAX_COAST = Math.PI * 2; // a throw carries it one turn at most
+const DRAG_SLOP = 6; // px before a mouse press counts as a drag rather than a tap
+const DRAG_SLOP_TOUCH = 10; // a finger is less steady
+// Left turned away with nobody near it, the portrait turns back to face front the short way round.
+const HOME_AFTER = 2600; // ms from the pointer leaving
+const HOME_MS = 900; // plus up to HOME_MS_TURN for a half turn
+const HOME_MS_TURN = 700;
 const SHOWN = 0.8; // share of the bust height in frame, from the top of the head; the rest of the chest runs off the bottom edge
 const TAU = Math.PI * 2;
 const MIN_SPAN = 0.4; // narrowest tone range the levels stretch to the full dot range
@@ -226,7 +241,12 @@ export function DotBust({
     };
     let yaw = 0;
     let yawTarget = 0;
-    let drag: { x: number; yaw: number; moved: boolean } | null = null;
+    let drag: { x: number; yaw: number; moved: boolean; slop: number } | null = null;
+    // The last moments of the drag, for the speed it is released at.
+    let trail: { t: number; yaw: number }[] = [];
+    // The turn back to front: waiting for homeAt, then eased from one yaw to another.
+    let homeAt = 0;
+    let homing: { from: number; to: number; t0: number; ms: number } | null = null;
 
     // Fit the camera so the whole bust fits the canvas with a little margin, slightly above centre.
     // Frame the top SHOWN of the bust so it draws large, with the cut on the
@@ -267,8 +287,27 @@ export function DotBust({
       lastFrame = now;
       const t = now / 1000;
 
-      // Idle sway (as on the reference: a few slow, small sines) plus the drag turn, damped.
-      yaw += (yawTarget - yaw) * (still() ? 1 : 1 - (1 - DAMPING) ** (dt * 60));
+      // The turn: eased home, or closing on its target (fast under the hand, slowly once thrown).
+      if (homeAt && !drag && now >= homeAt) {
+        homeAt = 0;
+        const to = Math.round(yaw / TAU) * TAU;
+        if (!still() && Math.abs(to - yaw) > 0.02) {
+          homing = { from: yaw, to, t0: now, ms: HOME_MS + HOME_MS_TURN * (Math.abs(to - yaw) / Math.PI) };
+        }
+      }
+      if (homing) {
+        const p = Math.min(1, (now - homing.t0) / homing.ms);
+        yaw = homing.from + (homing.to - homing.from) * easeInOutQuad(p);
+        yawTarget = yaw;
+        if (p >= 1) {
+          homing = null;
+          remeasureAt = now + 100;
+        }
+      } else {
+        const k = drag ? TRACK : GLIDE;
+        yaw += (yawTarget - yaw) * (still() ? 1 : 1 - (1 - k) ** (dt * 60));
+      }
+      // Idle sway (as on the reference: a few slow, small sines) on top of the turn.
       const sway = still() ? 0 : 1;
       pivot.rotation.y = yaw + sway * (0.03 * Math.sin(0.15 * t * TAU) + 0.018 * Math.sin(0.07 * t * TAU));
       pivot.rotation.x = sway * (0.01 * Math.sin(0.12 * t * TAU) + 0.007 * Math.sin(0.05 * t * TAU));
@@ -364,31 +403,56 @@ export function DotBust({
     // turn carries on when it leaves the plate; a vertical swipe on touch still scrolls the page.
     const onDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
-      drag = { x: e.clientX, yaw: yawTarget, moved: false };
+      // A press catches the bust where it is on screen, mid-coast or mid-turn-home included.
+      homing = null;
+      homeAt = 0;
+      yawTarget = yaw;
+      trail = [];
+      drag = { x: e.clientX, yaw, moved: false, slop: e.pointerType === "mouse" ? DRAG_SLOP : DRAG_SLOP_TOUCH };
       host.setPointerCapture?.(e.pointerId);
     };
     const onMove = (e: PointerEvent) => {
       if (!drag) return;
       const dx = e.clientX - drag.x;
-      if (!drag.moved && Math.abs(dx) < DRAG_SLOP) return;
+      if (!drag.moved && Math.abs(dx) < drag.slop) return;
       drag.moved = true;
       const h = canvas.getBoundingClientRect().height || 1;
       yawTarget = drag.yaw + (dx / h) * DRAG_TURN;
+      trail.push({ t: e.timeStamp, yaw: yawTarget });
+      while (trail.length > 2 && trail[0].t < e.timeStamp - VEL_WINDOW) trail.shift();
       wake();
     };
     const onUp = (e: PointerEvent) => {
-      // Measure once the damped turn has settled.
       if (drag?.moved) {
-        remeasureAt = performance.now() + (still() ? 0 : 900);
+        // Thrown: hand the speed over and let it coast. Stopped first, or cancelled: it stays put.
+        const a = trail[0];
+        const b = trail[trail.length - 1];
+        if (!still() && e.type === "pointerup" && a && b && b.t > a.t && e.timeStamp - b.t < VEL_STALE) {
+          const v = (b.yaw - a.yaw) / ((b.t - a.t) / 1000); // rad/s
+          yawTarget += Math.max(-MAX_COAST, Math.min(MAX_COAST, project(v)));
+        }
+        // Measure the tone once the coast has settled.
+        remeasureAt = performance.now() + (still() ? 0 : 1800);
         wake();
       }
       drag = null;
+      trail = [];
       if (host.hasPointerCapture?.(e.pointerId)) host.releasePointerCapture(e.pointerId);
+    };
+    // The turn home waits for the pointer to leave (a finger leaves when it lifts), so the bust
+    // never moves under someone still looking it over.
+    const onEnter = () => {
+      homeAt = 0;
+    };
+    const onLeave = () => {
+      if (!still()) homeAt = performance.now() + HOME_AFTER;
     };
     host.addEventListener("pointerdown", onDown);
     host.addEventListener("pointermove", onMove);
     host.addEventListener("pointerup", onUp);
     host.addEventListener("pointercancel", onUp);
+    host.addEventListener("pointerenter", onEnter);
+    host.addEventListener("pointerleave", onLeave);
 
     const ro = new ResizeObserver(() => {
       if (resize()) wake();
@@ -459,6 +523,8 @@ export function DotBust({
       host.removeEventListener("pointermove", onMove);
       host.removeEventListener("pointerup", onUp);
       host.removeEventListener("pointercancel", onUp);
+      host.removeEventListener("pointerenter", onEnter);
+      host.removeEventListener("pointerleave", onLeave);
       reduce.removeEventListener("change", onReduce);
       wakeRef.current = () => {};
       replayRef.current = () => {};

@@ -12,7 +12,9 @@ export function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: n
     <motion.div
       className={styles.reveal}
       initial={{ opacity: 0, y: 32, scale: 0.985, filter: "blur(12px)" }}
-      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+      // The filter goes once it's sharp, so a settled section isn't an extra layer to paint
+      // under the glass notch and dock as they blur it.
+      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{
         duration: 0.9,
