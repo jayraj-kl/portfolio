@@ -1,17 +1,6 @@
 /* The home page – Halftone White, after Miyoko: one narrow proof column on a hatched plate.
-   White paper, black ink, greys stepped from black, one red registration mark. Dark: the plate inverted. */
-
-:global(html):has(.root) {
-  background: #fff;
-  color-scheme: light;
-  scrollbar-color: #8a8a8a #fff;
-}
-
-:global(html.dark):has(.root) {
-  background: #0c0c0b;
-  color-scheme: dark;
-  scrollbar-color: #5a5a57 #0c0c0b;
-}
+   White paper, black ink, greys stepped from black, one red registration mark. Dark: the plate inverted.
+   The page's colours on <html> (background, scrollbar) are set by PAGE_STYLE in home-page.tsx. */
 
 .root {
   --paper: #fff;
@@ -44,6 +33,29 @@
   --press: 0.97;
   --press-sm: 0.94;
 
+  /* Glass: one material, in the thickness the surface's role asks for, after Apple's materials.
+     Every frosted surface takes its blur, its fill and its edge from here, so a new one matches
+     the rest, and the accessibility fallbacks below are written once for all of them.
+     Thin: a scrim softening the page behind a modal. Regular: the dock, controls floating on the
+     page. Thick: the footer slab, a pane laid over a picture. Ink: the notch and the command
+     palette, dark islands that invert to light in the dark theme. Never stack one on another:
+     glass over glass muddies the blur and doubles its cost. */
+  --glass-thin: blur(6px) saturate(120%);
+  --glass-regular: blur(20px) saturate(170%);
+  --glass-thick: blur(28px) saturate(185%);
+  --glass-ink: blur(24px) saturate(160%);
+  --glass-thin-fill: color-mix(in srgb, var(--ink) 16%, transparent);
+  --glass-regular-fill: color-mix(in srgb, var(--paper) 64%, transparent);
+  --glass-thick-fill: color-mix(in srgb, var(--paper-2) 66%, transparent);
+  --glass-ink-fill: color-mix(in srgb, var(--ink) 84%, transparent);
+  /* The edge: a lit top line on paper glass; a half-pixel rim and a fainter top line on ink. */
+  --glass-edge: inset 0 1px 0 color-mix(in srgb, var(--paper) 70%, transparent);
+  --glass-ink-edge:
+    inset 0 0 0 0.5px color-mix(in srgb, var(--paper) 16%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--paper) 12%, transparent);
+  /* The shadow under a floating island. */
+  --glass-lift: 0 10px 28px -14px rgb(0 0 0 / 0.45);
+
   min-height: 100vh;
   background: var(--paper);
   color: var(--ink);
@@ -68,6 +80,32 @@
   --dot: #1f1f1e;
   /* Most logos are dark ink on nothing, so in dark they sit on a white plate (as Miyoko's IEEE does). */
   --logo-plate: #fff;
+  /* Ink is light in the dark theme and would haze the page; a scrim dims with black instead. */
+  --glass-thin-fill: rgb(0 0 0 / 0.45);
+}
+
+/* The glass gives way to solid surfaces when the reader asks for less transparency or more
+   contrast. Only the tokens change, so every frosted surface follows. A scrim stays a tint,
+   since a solid one would hide the page it is there to dim. */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .root {
+    --glass-thin: none;
+    --glass-regular: none;
+    --glass-thick: none;
+    --glass-ink: none;
+    --glass-regular-fill: var(--paper);
+    --glass-thick-fill: var(--paper-2);
+    --glass-ink-fill: var(--ink);
+    /* Darker, to make up for the blur it loses. (The dark theme's black scrim outranks this.) */
+    --glass-thin-fill: color-mix(in srgb, var(--ink) 40%, transparent);
+  }
+}
+
+/* More contrast also draws the ink islands' edge as a full line. */
+@media (prefers-contrast: more) {
+  .root {
+    --glass-ink-edge: inset 0 0 0 1px var(--paper);
+  }
 }
 
 .root ::selection {
@@ -816,22 +854,9 @@ section.row > .cell {
 .roleScrim {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--ink) 16%, transparent);
-  -webkit-backdrop-filter: blur(6px) saturate(120%);
-  backdrop-filter: blur(6px) saturate(120%);
-}
-
-/* Ink is light in dark mode, which would haze the page; the scrim dims with black instead. */
-:global(.dark) .roleScrim {
-  background: rgb(0 0 0 / 0.45);
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .roleScrim {
-    background: color-mix(in srgb, var(--ink) 40%, transparent);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
+  background: var(--glass-thin-fill);
+  -webkit-backdrop-filter: var(--glass-thin);
+  backdrop-filter: var(--glass-thin);
 }
 
 .roleModal {
@@ -1572,10 +1597,22 @@ a.arrowCell svg {
 
 .graph {
   min-height: 132px;
-  overflow-x: auto;
   color: var(--grey);
   font-family: var(--home-mono), monospace;
   font-size: 12px;
+}
+
+/* A year of weeks drawn at its natural size (10px days, 3px gaps) is a little wider than the
+   column, so it scaled up a scrollbar. The SVG has a viewBox: it now scales to the column's
+   width instead. On a phone that would shrink the days and labels past reading, so it stops at a
+   floor, scrolls sideways there, and starts at the latest weeks (see Contributions). */
+.graph :global(.react-activity-calendar__calendar) {
+  width: 100%;
+  height: auto;
+  min-width: 560px;
+}
+
+.graph :global(.react-activity-calendar__scroll-container) {
   scrollbar-width: thin;
 }
 
@@ -1694,9 +1731,9 @@ a.arrowCell svg {
   justify-content: flex-end;
   /* Frosted glass over the city: the neon bleeds up through the sign-off as soft colour, so the
      slab reads as a pane laid on the picture rather than a strip cut out of it. */
-  background: color-mix(in srgb, var(--paper-2) 66%, transparent);
-  -webkit-backdrop-filter: blur(28px) saturate(185%);
-  backdrop-filter: blur(28px) saturate(185%);
+  background: var(--glass-thick-fill);
+  -webkit-backdrop-filter: var(--glass-thick);
+  backdrop-filter: var(--glass-thick);
   clip-path: polygon(
     0 0,
     calc(50% - var(--notch-top) / 2) 0,
@@ -1729,14 +1766,6 @@ a.arrowCell svg {
   padding-bottom: 16px;
   /* A grey rule turns muddy on tinted glass; a share of ink keeps it a hairline on any colour. */
   border-bottom: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
-}
-
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .siteFooter {
-    background: var(--paper-2);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
 }
 
 .footName {
@@ -1878,7 +1907,12 @@ a.arrowCell svg {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   mix-blend-mode: overlay;
   opacity: 0.6;
-  animation: home-grain 0.6s steps(6) infinite;
+  animation: home-grain 0.6s steps(6) infinite paused;
+}
+
+/* Only while the scene is on screen (FootCrt). */
+.footCrt[data-live]::after {
+  animation-play-state: running;
 }
 
 @keyframes home-grain {
@@ -2030,32 +2064,11 @@ a.arrowCell svg {
   overflow: hidden;
   /* Glass of ink: the page reads through it as frosted grain, the way an island floats over
      whatever is behind it. A half-pixel rim and a lit top edge give the material its edge. */
-  background: color-mix(in srgb, var(--ink) 84%, transparent);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  backdrop-filter: blur(24px) saturate(160%);
+  background: var(--glass-ink-fill);
+  -webkit-backdrop-filter: var(--glass-ink);
+  backdrop-filter: var(--glass-ink);
   color: var(--paper);
-  box-shadow:
-    inset 0 0 0 0.5px color-mix(in srgb, var(--paper) 16%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--paper) 12%, transparent),
-    0 10px 28px -14px rgb(0 0 0 / 0.45);
-}
-
-/* Glass gives way to the solid plate when the reader asks for less transparency or more contrast. */
-@media (prefers-reduced-transparency: reduce) {
-  .notch {
-    background: var(--ink);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-@media (prefers-contrast: more) {
-  .notch {
-    background: var(--ink);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    box-shadow: inset 0 0 0 1px var(--paper);
-  }
+  box-shadow: var(--glass-ink-edge), var(--glass-lift);
 }
 
 .notchOpen {
@@ -2184,14 +2197,240 @@ a.arrowCell svg {
   opacity: 1;
 }
 
-/* Sections land below the notch, and take focus after a jump without drawing a ring. */
-.row[id] {
+/* The way into the command palette, under the sections, with its shortcut. */
+.notchSearchItem {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--paper) 12%, transparent);
+}
+
+.notchSearch {
+  width: 100%;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.notchSearchIcon {
+  flex: none;
+  margin-inline: -4px;
+}
+
+.notchKbd,
+.palKbd {
+  margin-left: auto;
+  padding: 4px 6px;
+  border-radius: 5px;
+  border: 1px solid color-mix(in srgb, var(--paper) 22%, transparent);
+  color: color-mix(in srgb, var(--paper) 62%, transparent);
+  font: 400 0.6875rem/1 var(--home-mono), monospace;
+  letter-spacing: 0.02em;
+}
+
+/* Sections, cards and papers land below the notch, and take focus after a jump without drawing
+   a ring. */
+.row[id],
+.cardItem,
+.jumpTarget {
   scroll-margin-top: 64px;
 }
 
 .row[id]:focus,
+.cardItem:focus,
+.jumpTarget:focus,
 .root main:focus {
   outline: none;
+}
+
+/* ---------- Command palette ---------- */
+
+/* Dims the page so the palette is the one thing to read. A tint only: the palette is glass, and
+   glass over a blurred scrim would muddy both. */
+.palScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 69;
+  background: var(--glass-thin-fill);
+}
+
+/* Where the notch sits, so the palette opens in its place. Centred with flex, as the notch is,
+   because motion's transform would overwrite a centring one. */
+.palHost {
+  position: fixed;
+  z-index: 70;
+  top: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding-inline: 12px;
+  pointer-events: none;
+}
+
+.palPop {
+  width: min(560px, 100%);
+  pointer-events: auto;
+  transform-origin: 50% 0;
+}
+
+/* The notch's material, at the open notch's corner. */
+.palette {
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--glass-ink-fill);
+  -webkit-backdrop-filter: var(--glass-ink);
+  backdrop-filter: var(--glass-ink);
+  color: var(--paper);
+  box-shadow: var(--glass-ink-edge), var(--glass-lift);
+}
+
+.palInputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--paper) 12%, transparent);
+}
+
+.palInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: 400 1rem/1 var(--home-sans), sans-serif;
+  outline: none;
+}
+
+/* The field is the palette's only stop and its caret shows it has focus; the page's focus ring
+   would draw a box inside the glass. */
+.palInput:focus-visible {
+  outline: none;
+}
+
+.palInput::placeholder {
+  color: color-mix(in srgb, var(--paper) 50%, transparent);
+}
+
+/* cmdk measures the list into --cmdk-list-height, so the panel eases to its new height as the
+   search narrows it instead of jumping. The padding sits on the measured part. */
+.palList {
+  height: var(--cmdk-list-height);
+  max-height: min(56vh, 440px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 8px;
+  scrollbar-width: thin;
+  transition: height 220ms var(--ease-out);
+}
+
+.palList [cmdk-list-sizer] {
+  padding: 4px 8px 8px;
+}
+
+.palList [cmdk-group-heading] {
+  padding: 12px 10px 6px;
+  color: color-mix(in srgb, var(--paper) 50%, transparent);
+  font: 400 0.6875rem/1 var(--home-mono), monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* The notch's own rows: dimmed until chosen, a faint plate when they are. */
+.palItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  color: color-mix(in srgb, var(--paper) 74%, transparent);
+  font: 500 0.9375rem/1.2 var(--home-sans), sans-serif;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color 120ms var(--ease-out),
+    color 120ms var(--ease-out);
+}
+
+.palItem[data-selected="true"] {
+  background: color-mix(in srgb, var(--paper) 10%, transparent);
+  color: var(--paper);
+}
+
+.palItem:active {
+  background: color-mix(in srgb, var(--paper) 16%, transparent);
+}
+
+.palIcon {
+  flex: none;
+  opacity: 0.7;
+}
+
+.palLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palHint {
+  flex: none;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--paper) 48%, transparent);
+  font: 400 0.75rem/1 var(--home-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.palEmpty {
+  padding: 28px 10px 32px;
+  text-align: center;
+  color: color-mix(in srgb, var(--paper) 55%, transparent);
+  font-size: 0.9375rem;
+}
+
+.palFoot {
+  display: flex;
+  gap: 18px;
+  padding: 10px 16px;
+  border-top: 1px solid color-mix(in srgb, var(--paper) 12%, transparent);
+  color: color-mix(in srgb, var(--paper) 48%, transparent);
+  font: 400 0.6875rem/1 var(--home-mono), monospace;
+  letter-spacing: 0.02em;
+}
+
+/* Without a keyboard the key hints are noise; on a phone the hints would also crowd the label. */
+@media (hover: none) {
+  .palKbd,
+  .notchKbd,
+  .palFoot {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .palHint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palList {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .palItem[data-selected="true"] {
+    outline: 1px solid var(--paper);
+    outline-offset: -1px;
+  }
 }
 
 .dockPop {
@@ -2294,15 +2533,15 @@ a.arrowCell svg {
    passes under the dock as a soft blur instead of stopping at a white bar. */
 .dockDesktop,
 .dockMobile > button {
-  background: color-mix(in srgb, var(--paper) 64%, transparent);
-  -webkit-backdrop-filter: blur(20px) saturate(170%);
-  backdrop-filter: blur(20px) saturate(170%);
+  background: var(--glass-regular-fill);
+  -webkit-backdrop-filter: var(--glass-regular);
+  backdrop-filter: var(--glass-regular);
 }
 
 .dockDesktop {
   border-radius: 9999px;
   border: 0;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--paper) 70%, transparent);
+  box-shadow: var(--glass-edge);
 }
 
 /* Hollow rings on the glass: a second light layer on top of it would muddy the blur. */
@@ -2345,23 +2584,7 @@ a.arrowCell svg {
   transition: scale 240ms var(--ease-out);
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  .dockDesktop,
-  .dockMobile > button {
-    background: var(--paper);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
 @media (prefers-contrast: more) {
-  .dockDesktop,
-  .dockMobile > button {
-    background: var(--paper);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-
   .dockDesktop [data-dock-item] > div {
     border-color: var(--ink);
   }

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useTheme } from "next-themes";
+import { switchTheme } from "@/lib/theme-switch";
 import { DotBust, type DotBustHandle } from "@/components/home/dot-bust";
 
 // Each model was generated from the same AI-made views of Jayraj's old avatar. An untextured model
@@ -88,7 +89,7 @@ export function Avatar3DLab() {
           </button>
           <button
             type="button"
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            onClick={() => switchTheme(setTheme, resolvedTheme === "dark" ? "light" : "dark")}
             className="rounded-md border border-border px-3 py-1.5 hover:bg-muted"
           >
             Theme

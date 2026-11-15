@@ -2,10 +2,11 @@
 
 import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from "motion/react";
 import { useCallback, useEffect, useId, useRef, useState, type MouseEvent } from "react";
-import { Check } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import { TextMorph } from "torph/react";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
-import { INTRO_ID, NOTCH_STATUS_EVENT, STATUS_HOLD_MS, type NotchSection } from "./notch-sections";
+import { INTRO_ID, NOTCH_STATUS_EVENT, STATUS_HOLD_MS, goToSection, type NotchSection } from "./notch-sections";
+import { PALETTE_OPENED_EVENT, openPalette, shortcutLabel } from "./palette-items";
 import styles from "./home.module.css";
 
 const SPRING = { type: "spring", stiffness: 420, damping: 34, mass: 0.9 } as const;
@@ -149,25 +150,18 @@ export function Notch({ sections }: { sections: NotchSection[] }) {
     };
   }, [open, close]);
 
+  // The palette opens in the notch's place, so the notch folds away as it does, however it was
+  // opened (its own row, or the keyboard).
+  useEffect(() => {
+    const onPalette = () => setOpen(false);
+    window.addEventListener(PALETTE_OPENED_EVENT, onPalette);
+    return () => window.removeEventListener(PALETTE_OPENED_EVENT, onPalette);
+  }, []);
+
+  // Closes once the page has arrived.
   const go = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
-    const behavior: ScrollBehavior = reduce ? "auto" : "smooth";
-    const target = id === INTRO_ID ? null : document.getElementById(id);
-    if (target) target.scrollIntoView({ behavior, block: "start" });
-    else window.scrollTo({ top: 0, behavior });
-
-    // Close once the page has arrived; the timeout covers browsers without scrollend
-    // and the case where the page is already there and never scrolls.
-    let done = false;
-    const finish = () => {
-      if (done) return;
-      done = true;
-      window.removeEventListener("scrollend", finish);
-      close();
-      (target ?? document.getElementById("main"))?.focus({ preventScroll: true });
-    };
-    window.addEventListener("scrollend", finish, { once: true });
-    window.setTimeout(finish, reduce ? 0 : 1100);
+    goToSection(id, !reduce, close);
   };
 
   const transition = reduce ? { duration: 0 } : SPRING;
@@ -198,11 +192,17 @@ export function Notch({ sections }: { sections: NotchSection[] }) {
             aria-label="Sections"
             className={styles.notchPop}
             // Drops in from above the edge, sharpening as it lands; leaves the same way.
-            initial={{ opacity: 0, y: -28, scale: 0.92, filter: "blur(6px)" }}
+            // As one transform, so it runs on the compositor (see Reveal).
+            initial={{ opacity: 0, transform: "translateY(-28px) scale(0.92)", filter: "blur(6px)" }}
             // The filter is dropped once it lands: any filter on this wrapper would cut the
             // notch's backdrop-filter off from the page behind it.
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-            exit={{ opacity: 0, y: -28, scale: 0.92, filter: "blur(6px)" }}
+            animate={{
+              opacity: 1,
+              transform: "translateY(0px) scale(1)",
+              filter: "blur(0px)",
+              transitionEnd: { filter: "none", transform: "none" },
+            }}
+            exit={{ opacity: 0, transform: "translateY(-28px) scale(0.92)", filter: "blur(6px)" }}
             transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 30 }}
           >
             <motion.div
@@ -287,6 +287,15 @@ export function Notch({ sections }: { sections: NotchSection[] }) {
                         </a>
                       </li>
                     ))}
+                    {/* The palette's way in where there is no keyboard; on a desktop it also
+                        teaches the shortcut. */}
+                    <li className={styles.notchSearchItem}>
+                      <button type="button" className={`${styles.notchLink} ${styles.notchSearch}`} onClick={openPalette}>
+                        <Search size={14} strokeWidth={2} aria-hidden="true" className={styles.notchSearchIcon} />
+                        Search the page
+                        <kbd className={styles.notchKbd}>{shortcutLabel()}</kbd>
+                      </button>
+                    </li>
                   </motion.ul>
                 ) : null}
               </AnimatePresence>

@@ -53,7 +53,6 @@ export default function RootLayout({
           attribute="class"
           defaultTheme={DEFAULT_THEME}
           enableSystem
-          disableTransitionOnChange
         >
           {children}
           <ThemeFavicon />

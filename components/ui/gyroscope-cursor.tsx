@@ -11,10 +11,9 @@ const REST_ANGLE = -45;
 const SETTLE = 0.45;
 const INTERACTIVE = "a, button, input, textarea, select, [role='button']";
 
-const HIDE_NATIVE_CURSOR = `
-@media (hover: hover) and (pointer: fine) {
-  html[data-gyro-cursor], html[data-gyro-cursor] * { cursor: none !important; }
-}`;
+// The rule that hides the system pointer while this one is on lives in app/globals.css, keyed to
+// html[data-gyro-cursor]. It used to be a <style> rendered here, but a stylesheet added after the
+// page has loaded makes the browser restyle the whole page.
 
 // An arrow pointer that turns to face the way it is moving.
 export function GyroscopeCursor({
@@ -113,7 +112,6 @@ export function GyroscopeCursor({
 
   return (
     <>
-      <style>{HIDE_NATIVE_CURSOR}</style>
       <motion.div
         aria-hidden="true"
         className="pointer-events-none fixed top-0 left-0 z-[9999]"

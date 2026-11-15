@@ -11,7 +11,7 @@ import styles from "./home.module.css";
 
 type CopyState = "idle" | "copied" | "failed";
 
-async function writeClipboard(text: string) {
+export async function writeClipboard(text: string) {
   try {
     await navigator.clipboard.writeText(text);
     return true;

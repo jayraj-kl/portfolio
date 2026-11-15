@@ -5,7 +5,8 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { warmLiquidMetal } from "@/components/ui/liquid-metal-border";
+import { whenIdle } from "@/hooks/use-near";
+import { afterHydration, afterJobs, introSettled } from "@/lib/load-order";
 import styles from "./home.module.css";
 
 const DotBust = dynamic(() => import("./dot-bust").then((m) => m.DotBust), { ssr: false });
@@ -15,24 +16,41 @@ const DotBust = dynamic(() => import("./dot-bust").then((m) => m.DotBust), { ssr
 if (typeof window !== "undefined") void import("./dot-bust");
 
 export function HeroBust({ src, label }: { src: string; label: string }) {
-  // One job on the graphics card at a time. While it compiles the liquid-metal rims' shader
-  // (about 300ms on a first visit), anything another canvas asks of it has to wait, and the bust
-  // setting up its renderer in that window held the whole page for as long. The compile starts
-  // with the page and is usually over before three.js has even arrived, so this costs nothing.
-  const [clear, setClear] = useState(false);
+  // The bust's intro (the dots shrinking into the portrait) is drawn frame by frame on the main
+  // thread, so it only plays smoothly on a quiet one. Setting the bust up also costs a few
+  // hundred milliseconds of its own (a WebGL context, the model, two shader programs). So it
+  // waits for React to finish taking the page over (every section reports in; on a slow phone that
+  // takes a few seconds) and then for an idle moment, sets up before any dot is drawn, and plays
+  // the intro on a page with nothing else to do. The model and three.js are already downloading
+  // meanwhile (lib/load-order.ts has the whole order).
+  const [start, setStart] = useState(false);
   useEffect(() => {
-    let on = true;
-    warmLiquidMetal().then(() => {
-      if (on) setClear(true);
+    let cancel = () => {};
+    let gone = false;
+    void afterHydration().then(() => {
+      if (!gone) cancel = whenIdle(() => setStart(true), 500);
     });
     return () => {
-      on = false;
+      gone = true;
+      cancel();
     };
   }, []);
 
   return (
     <div className={`${styles.plate} ${styles.bust}`}>
-      {clear ? <DotBust src={src} label={label} look="clay" cell={4} className={styles.canvas} /> : null}
+      {start ? (
+        <DotBust
+          src={src}
+          label={label}
+          look="clay"
+          cell={4}
+          className={styles.canvas}
+          // The liquid-metal rims start while the bust sets up; its dots wait for them, so the
+          // intro never stutters over a rim starting.
+          beforeIntro={afterJobs}
+          onSettled={introSettled}
+        />
+      ) : null}
     </div>
   );
 }

@@ -48,12 +48,19 @@ const TAU = Math.PI * 2;
 const MIN_SPAN = 0.4; // narrowest tone range the levels stretch to the full dot range
 const MAX_GAMMA = 1.6;
 
-// Tone of a rendered frame, over the covered pixels: the 2nd and 98th percentile of sRGB luma, and
-// the gamma that puts the median halfway, so a mostly lit surface still spreads across dot sizes.
-function renderLevels(renderer: THREE.WebGLRenderer, rt: THREE.WebGLRenderTarget): [number, number, number] {
-  const { width: w, height: h } = rt;
-  const px = new Uint8Array(w * h * 4);
-  renderer.readRenderTargetPixels(rt, 0, 0, w, h, px);
+// The model's geometry is meshopt-compressed. Decoding it on a worker keeps the main thread free
+// while the page is still coming up (on a phone, decoding in place held it for about 100ms).
+let decoderWorkers = false;
+function startDecoderWorker() {
+  if (decoderWorkers || typeof Worker === "undefined") return;
+  decoderWorkers = true;
+  (MeshoptDecoder as unknown as { useWorkers?: (count: number) => void }).useWorkers?.(1);
+}
+
+// Tone of a rendered frame (its pixels, read back from the render target), over the covered
+// pixels: the 2nd and 98th percentile of sRGB luma, and the gamma that puts the median halfway, so
+// a mostly lit surface still spreads across dot sizes.
+function levelsOf(px: Uint8Array): [number, number, number] {
   const hist = new Uint32Array(256);
   let n = 0;
   for (let i = 0; i < px.length; i += 16) {
@@ -99,6 +106,8 @@ export function DotBust({
   rotation = [0, 0, 0],
   className,
   ref,
+  onSettled,
+  beforeIntro,
 }: {
   src: string;
   label: string;
@@ -112,13 +121,24 @@ export function DotBust({
   rotation?: [number, number, number];
   className?: string;
   ref?: Ref<DotBustHandle>;
+  /** Called once, when the intro has finished (or straight away if there won't be one). */
+  onSettled?: () => void;
+  /** The first intro waits for this, once the bust is ready to draw; nothing shows meanwhile. */
+  beforeIntro?: () => Promise<void>;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dark = useDark();
   const live = useRef({ dark, cell, raw, look });
   const replayRef = useRef<() => void>(() => {});
   const wakeRef = useRef<() => void>(() => {});
+  const settledRef = useRef(onSettled);
+  const beforeIntroRef = useRef(beforeIntro);
   const [rx, ry, rz] = rotation;
+
+  useEffect(() => {
+    settledRef.current = onSettled;
+    beforeIntroRef.current = beforeIntro;
+  }, [onSettled, beforeIntro]);
 
   useImperativeHandle(ref, () => ({ replay: () => replayRef.current() }), []);
 
@@ -134,10 +154,19 @@ export function DotBust({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     const still = () => reduce.matches;
 
+    // Reported once: the intro has finished, or there won't be one.
+    let settledOnce = false;
+    const settle = () => {
+      if (settledOnce) return;
+      settledOnce = true;
+      settledRef.current?.();
+    };
+
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, premultipliedAlpha: true });
     } catch {
+      settle();
       return;
     }
     renderer.setClearColor(0x000000, 0);
@@ -207,18 +236,66 @@ export function DotBust({
     let raf = 0;
     let lastFrame = 0;
     let introStart = -1;
+    // The intro waits for the first tone measurement, so its first frame is already in tone, and
+    // for whatever the page asks it to wait for (beforeIntro).
+    let introPending = false;
+    let introWaiting = false;
+    const beginIntro = () => {
+      if (introWaiting) return;
+      introWaiting = true;
+      void Promise.resolve(beforeIntroRef.current?.()).then(() => {
+        introWaiting = false;
+        if (disposed || !introPending) return;
+        introPending = false;
+        introStart = still() ? -1 : performance.now();
+        performance.mark("dot-bust:intro");
+        wake();
+      });
+    };
     let visible = true;
-    let levelsSet = false;
     let bgFor: boolean | null = null; // the theme u_bg was read for
     // After a turn the tone is measured again from the new view and eased to, so the back of the head
     // gets its own contrast without a snap. 0 means no measurement is waiting.
     let remeasureAt = 0;
     const toneGoal = { lo: 0, hi: 1, gamma: 1 };
+    // Until the first measurement is back the dots have no tone to follow, so none are drawn.
+    let toneKnown = false;
+    let needMeasure = true;
+    let measuring = false;
+    let pixels = new Uint8Array(0);
+    // The render is read back without waiting on the GPU. A synchronous read holds the page until
+    // the GPU has finished everything queued before it, which on a phone runs to tens of
+    // milliseconds; this way the frame carries on and the tone arrives a frame or two later.
+    // Call it right after rendering into rt.
     const measureTone = () => {
-      const [lo, hi, gamma] = renderLevels(renderer, rt);
-      toneGoal.lo = lo;
-      toneGoal.hi = hi;
-      toneGoal.gamma = gamma;
+      measuring = true;
+      const { width: w, height: h } = rt;
+      if (pixels.length !== w * h * 4) pixels = new Uint8Array(w * h * 4);
+      const buf = pixels;
+      const done = (ok: boolean) => {
+        measuring = false;
+        if (disposed) return;
+        if (ok) {
+          const tone = levelsOf(buf);
+          toneGoal.lo = tone[0];
+          toneGoal.hi = tone[1];
+          toneGoal.gamma = tone[2];
+        }
+        // The first tone, and any under reduced motion, is taken at once; later ones are eased to.
+        if (!toneKnown || still()) {
+          uniforms.u_levels.value.set(toneGoal.lo, toneGoal.hi);
+          uniforms.u_gamma.value = toneGoal.gamma;
+        }
+        if (!toneKnown) {
+          toneKnown = true;
+          if (introPending) beginIntro();
+        }
+        wake();
+      };
+      renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h, buf).then(
+        () => done(true),
+        () => done(false),
+      );
     };
     let lookNow: "texture" | "clay" | null = null;
     const textured = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
@@ -237,7 +314,7 @@ export function DotBust({
       top.intensity = l[3];
       back.intensity = l[4];
       lookNow = want;
-      levelsSet = false;
+      needMeasure = true;
     };
     let yaw = 0;
     let yawTarget = 0;
@@ -324,18 +401,20 @@ export function DotBust({
       renderer.clear();
       renderer.render(scene, camera);
       const levels = uniforms.u_levels.value;
-      if (!levelsSet) {
-        measureTone();
-        levels.set(toneGoal.lo, toneGoal.hi);
-        uniforms.u_gamma.value = toneGoal.gamma;
-        levelsSet = true;
-      } else if (remeasureAt && now >= remeasureAt) {
-        measureTone();
+      if (remeasureAt && now >= remeasureAt) {
         remeasureAt = 0;
-        if (still()) {
-          levels.set(toneGoal.lo, toneGoal.hi);
-          uniforms.u_gamma.value = toneGoal.gamma;
-        }
+        needMeasure = true;
+      }
+      if (needMeasure && !measuring) {
+        needMeasure = false;
+        measureTone();
+      }
+      // Nothing to show until the tone is known and the intro may start. No frames are asked for
+      // meanwhile either: the measurement and beginIntro wake the loop when they are done.
+      if (!toneKnown || introPending) {
+        renderer.setRenderTarget(null);
+        renderer.clear();
+        return false;
       }
       const ease = 1 - Math.exp(-dt / 0.3);
       levels.x += (toneGoal.lo - levels.x) * ease;
@@ -350,6 +429,7 @@ export function DotBust({
         cellPx = INTRO_CELL + (cell - INTRO_CELL) * easeOutCubic(Math.min(e / SHRINK_MS, 1));
         if (e >= SHRINK_MS) introStart = -1;
       }
+      if (introStart < 0 && !introPending) settle();
       const n = scramble.step(dt);
       const ink = dark ? INK_DARK : INK_LIGHT;
       uniforms.u_cell.value = Math.max(2, cellPx * dpr);
@@ -394,7 +474,11 @@ export function DotBust({
     scramble.attach(host);
 
     const replay = () => {
-      introStart = still() ? -1 : performance.now();
+      if (toneKnown) introStart = still() ? -1 : performance.now();
+      else {
+        introStart = -1;
+        introPending = true;
+      }
       wake();
     };
     replayRef.current = replay;
@@ -466,6 +550,7 @@ export function DotBust({
     io.observe(canvas);
 
     // Meshopt-compressed models (EXT_meshopt_compression) need the decoder; others load as before.
+    startDecoderWorker();
     new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).load(
       src,
       (gltf) => {
@@ -513,7 +598,10 @@ export function DotBust({
         Promise.all([scenePass, dotPass]).then(start, start);
       },
       undefined,
-      (err) => console.error("could not load", src, err),
+      (err) => {
+        console.error("could not load", src, err);
+        settle();
+      },
     );
 
     const onReduce = () => {

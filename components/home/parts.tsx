@@ -258,6 +258,39 @@ export function Contributions({ username }: { username: string }) {
   // The graph sits near the foot of the page: its script and its data are fetched as the reader
   // comes within a screen of it, not with the page.
   const near = useNear(box);
+
+  // Where the graph has to scroll (a phone), it opens on the latest weeks, as GitHub's does. The
+  // calendar draws an empty grid, then the data, so this keeps to the right end until the reader
+  // scrolls it themselves.
+  useEffect(() => {
+    const el = box.current;
+    if (!el || !near) return;
+    let touched = false;
+    const toEnd = () => {
+      const scroller = el.querySelector<HTMLElement>(".react-activity-calendar__scroll-container");
+      if (!scroller || touched) return;
+      if (scroller.scrollWidth > scroller.clientWidth) scroller.scrollLeft = scroller.scrollWidth;
+    };
+    const stop = () => {
+      touched = true;
+    };
+    const ro = new ResizeObserver(toEnd);
+    const mo = new MutationObserver(() => {
+      const scroller = el.querySelector(".react-activity-calendar__scroll-container");
+      if (scroller) ro.observe(scroller.firstElementChild ?? scroller);
+      toEnd();
+    });
+    mo.observe(el, { childList: true, subtree: true });
+    el.addEventListener("pointerdown", stop);
+    el.addEventListener("wheel", stop, { passive: true });
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+      el.removeEventListener("pointerdown", stop);
+      el.removeEventListener("wheel", stop);
+    };
+  }, [near]);
+
   return (
     <div ref={box} className={styles.graph}>
       {near ? (
@@ -299,8 +332,9 @@ export function Dock() {
       <div className={styles.dock} data-retired={retired || undefined} inert={retired}>
         <motion.div
           className={styles.dockPop}
-          initial={{ opacity: 0, y: 60, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          // As one transform, so it runs on the compositor (see Reveal).
+          initial={{ opacity: 0, transform: "translateY(60px) scale(0.8)" }}
+          animate={{ opacity: 1, transform: "translateY(0px) scale(1)", transitionEnd: { transform: "none" } }}
           // Nothing threw it, so it settles with only a trace of overshoot.
           transition={{ type: "spring", bounce: 0.15, duration: 0.5, delay: 0.35 }}
         >

@@ -23,11 +23,14 @@ import { Contributions, Dock, Expand, Logo, TechStack } from "@/components/home/
 import { LiquidMetalBorder } from "@/components/ui/liquid-metal-border";
 import { month, range } from "@/components/home/dates";
 import { Notch } from "@/components/home/notch";
+import { PaletteHost } from "@/components/home/palette-host";
+import type { PaletteData } from "@/components/home/palette-items";
 import { PreviousRoles } from "@/components/home/previous-roles";
 import { INTRO_ID, type NotchSection } from "@/components/home/notch-sections";
 import { SiteFooter } from "@/components/home/footer";
 import { HairlineFigure } from "@/components/home/hairline-figure";
 import { Reveal } from "@/components/home/reveal";
+import { HydrationMark } from "@/components/home/hydration-mark";
 import { Still } from "@/components/home/still";
 import styles from "@/components/home/home.module.css";
 import { WorkGrid, type WorkItem } from "@/components/home/work";
@@ -123,14 +126,17 @@ function Row({
         className={`${styles.cell} ${red ? styles.regRed : ""} ${cellClass ?? ""}`}
       >
         {children === null ? null : id ? (
-          <Reveal delay={0.05}>
-            {label ? (
-              <h2 id={`${id}-label`} className={styles.secLabel}>
-                {label}
-              </h2>
-            ) : null}
-            {children}
-          </Reveal>
+          <>
+            <Reveal delay={0.05}>
+              {label ? (
+                <h2 id={`${id}-label`} className={styles.secLabel}>
+                  {label}
+                </h2>
+              ) : null}
+              {children}
+            </Reveal>
+            <HydrationMark />
+          </>
         ) : (
           // The hero: the same focus-pull, run by the stylesheet, so the first screen paints
           // with the HTML instead of waiting for the script to load and start it.
@@ -261,7 +267,8 @@ function Publications({ c }: { c: ContentSet }) {
           const fig = publicFile(p.figure);
           const primary = p.links[0];
           return (
-            <li key={p.id}>
+            // The command palette jumps here.
+            <li key={p.id} id={`pub-${p.id}`} tabIndex={-1} className={styles.jumpTarget}>
               <article className={styles.box}>
                 <Still
                   source={{ kind: "figure", id: p.id }}
@@ -372,6 +379,19 @@ function News({ c }: { c: ContentSet }) {
 
 const BUST_SRC = "/home/bust.glb";
 
+// The page's colours on <html>, for the overscroll and the scrollbar. Printed with the page rather
+// than scoped by `html:has(.root)` in the stylesheet: a :has() rule on <html> makes the browser
+// check it again every time anything on the page is added or removed, and the page adds a lot
+// while it comes up.
+const PAGE_STYLE = `html{background:#fff;color-scheme:light;scrollbar-color:#8a8a8a #fff}
+html.dark{background:#0c0c0b;color-scheme:dark;scrollbar-color:#5a5a57 #0c0c0b}`;
+
+// The stylesheet @paper-design/shaders (the liquid-metal rims) adds to <head> when the first rim
+// starts, copied from its shader-mount.js. A stylesheet added at runtime makes the browser restyle
+// the whole page; the library adds its own only when it can't find one marked data-paper-shader,
+// so printing it here, with the page, means it is never added later.
+const PAPER_SHADER_STYLE = `@layer paper-shaders{:where([data-paper-shader]){isolation:isolate;position:relative;& canvas{contain:strict;display:block;position:absolute;inset:0;z-index:-1;width:100%;height:100%;border-radius:inherit;corner-shape:inherit}}}`;
+
 // Placeholder art until the footer gets its own picture or ASCII recipe.
 const FOOTER_SCENE_ALT =
   "Night City at golden hour, from Cyberpunk: Edgerunners";
@@ -417,6 +437,31 @@ export function HomePage({ profile }: { profile: Profile }) {
     { id: "contact", label: SECTION_LABELS.contact },
   ];
 
+  // The command palette: the notch's sections, plus every card and paper, and the page's actions.
+  const other: Profile = profile === "research" ? "sde" : "research";
+  const paletteData: PaletteData = {
+    sections: notchSections,
+    work: c.projects.map((p) => ({
+      id: `work-${p.slug}`,
+      label: p.name,
+      hint: p.year,
+      keywords: [p.tagline, ...p.stack],
+    })),
+    papers: c.publications.map((p) => ({
+      id: `pub-${p.id}`,
+      label: p.title,
+      hint: `${p.venueShort} ${p.year}`,
+      keywords: [p.venue, p.status],
+    })),
+    email: shared.email,
+    cv: c.cv,
+    socials: shared.socials,
+    otherProfile: {
+      label: other === "research" ? "Switch to the research version" : "Switch to the engineering version",
+      href: other === ACTIVE_PROFILE ? "/" : `/${other}`,
+    },
+  };
+
   const edu = shared.education;
   const blocks: Record<Block, ReactNode> = {
     experience: <Experience key="experience" c={c} />,
@@ -457,6 +502,9 @@ export function HomePage({ profile }: { profile: Profile }) {
       data-home-root
       className={styles.root}
     >
+      <style>{PAGE_STYLE}</style>
+      <style data-paper-shader="">{PAPER_SHADER_STYLE}</style>
+
       <a href="#main" className={styles.skip}>
         Skip to content
       </a>
@@ -550,16 +598,17 @@ export function HomePage({ profile }: { profile: Profile }) {
       </main>
 
       <SiteFooter
-        name={shared.name}
-        fullName={shared.fullName}
-        location={shared.location}
-        timeZone={shared.timeZone}
-        socials={shared.socials}
-        scene={footerScene ? { src: footerScene, alt: FOOTER_SCENE_ALT } : null}
-        dock={<Dock />}
-      />
+          name={shared.name}
+          fullName={shared.fullName}
+          location={shared.location}
+          timeZone={shared.timeZone}
+          socials={shared.socials}
+          scene={footerScene ? { src: footerScene, alt: FOOTER_SCENE_ALT } : null}
+          dock={<Dock />}
+        />
 
       <Notch sections={notchSections} />
+      <PaletteHost data={paletteData} />
       <PressFeedback />
     </div>
   );

@@ -136,6 +136,9 @@ export function WorkGrid({ items, categories }: { items: WorkItem[]; categories:
               <motion.li
                 layout
                 key={p.slug}
+                // The command palette jumps here.
+                id={`work-${p.slug}`}
+                tabIndex={-1}
                 className={styles.cardItem}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}

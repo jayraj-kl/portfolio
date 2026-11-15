@@ -1,3 +1,9 @@
+/* The liquid-metal rims' stylesheet (@paper-design/shaders) is printed with the home page, in its
+   own layer. A layer ranks by where it is first named, so it is named here, first, to rank below
+   Tailwind's: otherwise its position: relative on the shader box beats the rim's absolute
+   placement and the rim collapses into a bar. */
+@layer paper-shaders;
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -142,5 +148,15 @@
     );
     content: "";
     pointer-events: none;
+  }
+}
+
+/* GyroscopeCursor's arrow replaces the system pointer wherever it sets data-gyro-cursor on <html>.
+   Kept here rather than rendered by the component: a stylesheet added once the page is up makes
+   the browser restyle the whole page. */
+@media (hover: hover) and (pointer: fine) {
+  html[data-gyro-cursor],
+  html[data-gyro-cursor] * {
+    cursor: none !important;
   }
 }

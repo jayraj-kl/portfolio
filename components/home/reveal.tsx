@@ -11,10 +11,18 @@ export function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: n
   return (
     <motion.div
       className={styles.reveal}
-      initial={{ opacity: 0, y: 32, scale: 0.985, filter: "blur(12px)" }}
-      // The filter goes once it's sharp, so a settled section isn't an extra layer to paint
-      // under the glass notch and dock as they blur it.
-      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+      // One `transform` rather than motion's separate y and scale: only then does motion hand the
+      // animation to the browser's compositor, where it keeps its frame rate however busy the
+      // page's main thread is while it loads.
+      initial={{ opacity: 0, transform: "translateY(32px) scale(0.985)", filter: "blur(12px)" }}
+      // The filter and transform go once it has landed, so a settled section isn't an extra layer
+      // to paint under the glass notch and dock as they blur it.
+      whileInView={{
+        opacity: 1,
+        transform: "translateY(0px) scale(1)",
+        filter: "blur(0px)",
+        transitionEnd: { filter: "none", transform: "none" },
+      }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{
         duration: 0.9,

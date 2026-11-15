@@ -2,7 +2,8 @@
 
 import { liquidMetalFragmentShader, ShaderMount } from "@paper-design/shaders";
 import { useCallback, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
-import { whenIdle, whenNear } from "@/hooks/use-near";
+import { whenNear } from "@/hooks/use-near";
+import { afterHydration, oneAtATime, reserveJob } from "@/lib/load-order";
 import { cn } from "@/lib/utils";
 // The package keeps its vertex shader to itself, and the warm-up below has to compile exactly
 // the pair of shaders ShaderMount will, so it is read from the package's own file.
@@ -50,8 +51,12 @@ export function warmLiquidMetal() {
       gl.linkProgram(program);
       const giveUp = performance.now() + 4000;
       const poll = () => {
-        if (gl.getProgramParameter(program, parallel.COMPLETION_STATUS_KHR) || performance.now() > giveUp) resolve();
-        else window.setTimeout(poll, 16);
+        if (gl.getProgramParameter(program, parallel.COMPLETION_STATUS_KHR) || performance.now() > giveUp) {
+          resolve();
+          // The compiled program stays cached for the page; the spare context itself is let go,
+          // since a page only gets so many.
+          gl.getExtension("WEBGL_lose_context")?.loseContext();
+        } else window.setTimeout(poll, 16);
       };
       poll();
     } catch {
@@ -104,18 +109,23 @@ export function useLiquidMetal(speed = LIQUID_METAL_SPEED.rest) {
     if (!el) return;
     still.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     wanted.current = speed;
-    // A rim's shader is set up once it is near the screen and the program has been compiled in
-    // the background (see warmLiquidMetal), and then in a quiet moment, so the rims on a page
-    // don't all take their turn in one go while it loads. Until then the fallback gradient shows.
+    // Each rim needs a WebGL context of its own, and creating one holds the page for around
+    // 60ms. So a rim's shader waits until it is near the screen and React has finished taking the
+    // page over (lib/load-order.ts), then for the program to be compiled in the background (see
+    // warmLiquidMetal), and then takes its turn: one rim per quiet moment. It reserves its turn
+    // up front, so the hero's intro waits for it rather than stuttering over it. Until then the
+    // fallback gradient shows, which reads as the same metal standing still.
     let gone = false;
-    let cancelIdle = () => {};
-    const warm = warmLiquidMetal();
+    let release = () => {};
     const cancelNear = whenNear(
       el,
       async () => {
-        await warm;
-        if (gone) return;
-        cancelIdle = whenIdle(() => {
+        release = reserveJob();
+        await afterHydration();
+        await warmLiquidMetal();
+        if (gone) return release();
+        oneAtATime(() => {
+          if (gone) return release();
           try {
             mount.current = new ShaderMount(
               el,
@@ -128,6 +138,7 @@ export function useLiquidMetal(speed = LIQUID_METAL_SPEED.rest) {
             // No WebGL: the static fallback gradient on the element stays.
             mount.current = null;
           }
+          release();
         });
       },
       "50%",
@@ -135,7 +146,7 @@ export function useLiquidMetal(speed = LIQUID_METAL_SPEED.rest) {
     return () => {
       gone = true;
       cancelNear();
-      cancelIdle();
+      release();
       mount.current?.dispose();
       mount.current = null;
     };

@@ -5,6 +5,7 @@ import { AsciiArt } from "@/components/ui/sss";
 import type { Link } from "@/lib/content";
 // import { Dissolve } from "./dissolve";
 import { Clock } from "./interactive";
+import { FootCrt } from "./foot-crt";
 import styles from "./home.module.css";
 
 // After micro and helixa, in the "sss" recipe's CRT style: a full-bleed scene surfacing out of
@@ -54,7 +55,7 @@ export function SiteFooter({
                 className={styles.footImage}
               />
               {/* The "sss" recipe's CRT look on the still: scanlines, grain, haze. */}
-              <span className={styles.footCrt} aria-hidden="true" />
+              <FootCrt />
             </>
           ) : (
             <AsciiArt className={styles.footImage} />

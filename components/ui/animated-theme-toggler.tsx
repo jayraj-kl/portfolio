@@ -5,6 +5,7 @@ import { flushSync } from "react-dom";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { useTheme } from "next-themes";
+import { holdTransitions, switchTheme } from "@/lib/theme-switch";
 
 interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<"button"> {
   duration?: number;
@@ -32,13 +33,15 @@ export const AnimatedThemeToggler = ({
       typeof document.startViewTransition !== "function" ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
-      setTheme(theme === "dark" ? "light" : "dark");
+      switchTheme(setTheme, theme === "dark" ? "light" : "dark");
       return;
     }
 
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
+    // The new page is shown live under the reveal, so its transitions are held off as well.
+    const release = holdTransitions();
     const transition = document.startViewTransition(() => {
       flushSync(() => {
         setTheme(theme === "dark" ? "light" : "dark");
@@ -50,6 +53,7 @@ export const AnimatedThemeToggler = ({
     const restoreScroll = () => window.scrollTo(scrollX, scrollY);
     requestAnimationFrame(restoreScroll);
 
+    void transition.finished.finally(release);
     await transition.ready;
     restoreScroll();
 
