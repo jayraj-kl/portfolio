@@ -206,13 +206,25 @@ section.row > .cell {
   white-space: nowrap;
 }
 
+/* The window itself clips nothing. An inline-block that clips its overflow takes its bottom edge
+   as its baseline (Safari does this even for overflow: clip), which lifts the digits off the
+   line. So the baseline comes from an unseen digit in the flow, and the clipping is done by a
+   layer laid over the window, out of the flow. */
 .rollWindow {
+  position: relative;
   display: inline-block;
   height: 1.2em;
   line-height: 1.2;
-  /* clip, not hidden: hidden would move the window's baseline to its bottom edge and lift the
-     digits off the line. */
-  overflow: clip;
+}
+
+.rollStrut {
+  visibility: hidden;
+}
+
+.rollClip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
   /* Digits fade as they pass the window's edges, like a wheel turning out of sight. */
   -webkit-mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
   mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);

@@ -220,15 +220,20 @@ function RollDigit({ digit }: { digit: number }) {
   }
   return (
     <span className={styles.rollWindow}>
-      <span
-        className={styles.rollReel}
-        data-rolling={wheel.rolling || undefined}
-        style={{ transform: `translateY(${-wheel.pos * 1.2}em)` }}
-        onTransitionEnd={() => setWheel((w) => ({ ...w, pos: w.pos % 10, rolling: false }))}
-      >
-        {REEL.map((n, i) => (
-          <span key={i}>{n}</span>
-        ))}
+      {/* An unseen digit in the normal flow gives the window its width and, above all, its
+          baseline, so the wheel sits on the line of the text around it in every browser. */}
+      <span className={styles.rollStrut}>0</span>
+      <span className={styles.rollClip}>
+        <span
+          className={styles.rollReel}
+          data-rolling={wheel.rolling || undefined}
+          style={{ transform: `translateY(${-wheel.pos * 1.2}em)` }}
+          onTransitionEnd={() => setWheel((w) => ({ ...w, pos: w.pos % 10, rolling: false }))}
+        >
+          {REEL.map((n, i) => (
+            <span key={i}>{n}</span>
+          ))}
+        </span>
       </span>
     </span>
   );
