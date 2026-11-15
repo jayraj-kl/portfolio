@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { whenNear } from "@/hooks/use-near";
 import styles from "./home.module.css";
 
 // A hairline figure, mounted the way the hairline bench mounts one, without the bench's
@@ -40,38 +41,42 @@ export function HairlineFigure({ name }: { name: string }) {
     let handle: Handle | null = null;
     let cancelled = false;
 
-    Promise.all([loadKernel(), text(`/hairline/${name}.js`)])
-      .then(([HL, src]) => {
-        if (cancelled) return;
-        let figure: Figure | null = null;
-        // The figure ends by calling hairline({...}); give it HL and that function as arguments.
-        new Function("HL", "hairline", src)(HL, (f: Figure) => {
-          figure = f;
+    // The figure closes the page, so its two scripts are fetched as the reader gets near it.
+    const cancelNear = whenNear(host, () => {
+      Promise.all([loadKernel(), text(`/hairline/${name}.js`)])
+        .then(([HL, src]) => {
+          if (cancelled) return;
+          let figure: Figure | null = null;
+          // The figure ends by calling hairline({...}); give it HL and that function as arguments.
+          new Function("HL", "hairline", src)(HL, (f: Figure) => {
+            figure = f;
+          });
+          if (!figure) return;
+          const fig: Figure = figure;
+          HL.inject(document);
+          host.setAttribute("data-hairline", fig.name);
+          host.setAttribute("aria-label", fig.means);
+          const svg = HL.mk("svg", { viewBox: "0 0 400 320", "aria-hidden": "true" }, host);
+          // The figure names what is under the pointer here; the page does not show it.
+          let current: string | null = null;
+          const read: Read = {
+            get textContent() {
+              return current;
+            },
+            set textContent(value) {
+              current = value == null ? "" : String(value);
+            },
+          };
+          handle = fig.mount({ stage: host, svg, read }, fig.range[1]);
+        })
+        .catch(() => {
+          // Without the figure the close still reads; the space just stays empty.
         });
-        if (!figure) return;
-        const fig: Figure = figure;
-        HL.inject(document);
-        host.setAttribute("data-hairline", fig.name);
-        host.setAttribute("aria-label", fig.means);
-        const svg = HL.mk("svg", { viewBox: "0 0 400 320", "aria-hidden": "true" }, host);
-        // The figure names what is under the pointer here; the page does not show it.
-        let current: string | null = null;
-        const read: Read = {
-          get textContent() {
-            return current;
-          },
-          set textContent(value) {
-            current = value == null ? "" : String(value);
-          },
-        };
-        handle = fig.mount({ stage: host, svg, read }, fig.range[1]);
-      })
-      .catch(() => {
-        // Without the figure the close still reads; the space just stays empty.
-      });
+    });
 
     return () => {
       cancelled = true;
+      cancelNear();
       handle?.destroy();
       host.replaceChildren();
     };

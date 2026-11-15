@@ -1,14 +1,5 @@
-import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
-import { QrToggler } from "@/components/ui/qr-toggler";
-import {
-  IconBrandX,
-  IconBrandGithub,
-  IconBrandLinkedin,
-  IconMail,
-  IconQrcode,
-  IconSitemap,
-} from "@tabler/icons-react";
-
+// Plain values only. The layout and other server code read these, so nothing here may import a
+// component: the dock's links, which carry icons and buttons, live in dock-links.tsx.
 export const METADATA = {
   title: "Jayraj Ladkat",
 };
@@ -89,51 +80,5 @@ export const TECH_STACK = [
       { name: "Polars", slug: "polars" },
       { name: "Pandas", slug: "pandas" },
     ],
-  },
-];
-
-export const links = [
-  {
-    title: "Toggle Theme",
-    icon: <AnimatedThemeToggler duration={ANIMATION_THEME_TOGGLER_DURATION} />,
-  },
-  {
-    title: "QR Code",
-    icon: <QrToggler websiteUrl={WEBSITE_URL} />,
-  },
-  // {
-  //   title: "Study map",
-  //   icon: (
-  //     <IconSitemap className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-  //   ),
-  //   href: "/learn",
-  // },
-  {
-    title: "Email",
-    icon: (
-      <IconMail className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-    ),
-    href: "mailto:jayrajkladkat@gmail.com",
-  },
-  {
-    title: "GitHub",
-    icon: (
-      <IconBrandGithub className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-    ),
-    href: "https://github.com/jayraj-kl",
-  },
-  {
-    title: "LinkedIn",
-    icon: (
-      <IconBrandLinkedin className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-    ),
-    href: "https://www.linkedin.com/in/jayraj-ladkat-25534626b/",
-  },
-  {
-    title: "X",
-    icon: (
-      <IconBrandX className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-    ),
-    href: "https://x.com/JayrajKLadkat",
   },
 ];

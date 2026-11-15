@@ -3,6 +3,7 @@ import path from "node:path";
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { preload } from "react-dom";
 import {
   ACTIVE_PROFILE,
   getContent,
@@ -121,15 +122,19 @@ function Row({
       <div
         className={`${styles.cell} ${red ? styles.regRed : ""} ${cellClass ?? ""}`}
       >
-        {children === null ? null : (
-          <Reveal delay={id ? 0.05 : 0}>
-            {id && label ? (
+        {children === null ? null : id ? (
+          <Reveal delay={0.05}>
+            {label ? (
               <h2 id={`${id}-label`} className={styles.secLabel}>
                 {label}
               </h2>
             ) : null}
             {children}
           </Reveal>
+        ) : (
+          // The hero: the same focus-pull, run by the stylesheet, so the first screen paints
+          // with the HTML instead of waiting for the script to load and start it.
+          <div className={styles.revealNow}>{children}</div>
         )}
       </div>
       <div className={styles.gutter} aria-hidden="true" />
@@ -365,6 +370,8 @@ function News({ c }: { c: ContentSet }) {
   );
 }
 
+const BUST_SRC = "/home/bust.glb";
+
 // Placeholder art until the footer gets its own picture or ASCII recipe.
 const FOOTER_SCENE_ALT =
   "Night City at golden hour, from Cyberpunk: Edgerunners";
@@ -388,6 +395,10 @@ export function HomePage({ profile }: { profile: Profile }) {
   const footerScene = publicFile("home/footer-landscape.jpg");
   const [lead, follow] = splitLine(c.positioning);
   const portraitLabel = `${shared.name}'s head and shoulders, sculpted in 3D and drawn as a field of dots.`;
+  // The bust's model is the largest file on the page and the hero waits on it. Named in the HTML,
+  // it downloads alongside the scripts, not after three.js has loaded and asked for it. Low
+  // priority, so it never holds those scripts up. (GLTFLoader's fetch matches this request.)
+  preload(BUST_SRC, { as: "fetch", crossOrigin: "anonymous", fetchPriority: "low" });
 
   // The set's own order, with the tech stack after experience and education and GitHub before the close.
   const order: Block[] = [];
@@ -461,7 +472,7 @@ export function HomePage({ profile }: { profile: Profile }) {
         <Row rowClass={styles.heroRow} cellClass={styles.hero} red>
           <div className={styles.heroHost} data-screen-host>
             {/* Photo, then name, pronunciation and time, then the line about the work. */}
-            <HeroBust src="/home/bust.glb" label={portraitLabel} />
+            <HeroBust src={BUST_SRC} label={portraitLabel} />
             <div className={styles.heroText}>
               <div className={styles.identity}>
                 <p className={styles.identityName}>{shared.name}</p>

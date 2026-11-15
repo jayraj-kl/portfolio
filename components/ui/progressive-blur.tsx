@@ -29,6 +29,9 @@ export function ProgressiveBlur({
   return (
     <div className={cn('relative', className)}>
       {Array.from({ length: layers }).map((_, index) => {
+        // The first layer's blur is 0px: it would change nothing on screen, yet the browser
+        // would still composite a backdrop for it, so it is left out.
+        if (index * blurIntensity === 0) return null;
         const angle = GRADIENT_ANGLES[direction];
         const gradientStops = [
           index * segmentSize,

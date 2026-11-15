@@ -2,7 +2,63 @@
 
 import { liquidMetalFragmentShader, ShaderMount } from "@paper-design/shaders";
 import { useCallback, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { whenIdle, whenNear } from "@/hooks/use-near";
 import { cn } from "@/lib/utils";
+// The package keeps its vertex shader to itself, and the warm-up below has to compile exactly
+// the pair of shaders ShaderMount will, so it is read from the package's own file.
+import { vertexShaderSource } from "../../node_modules/@paper-design/shaders/dist/vertex-shader.js";
+
+// ShaderMount compiles its program in step with the page, and through Direct3D (Chrome on
+// Windows) the liquid-metal program takes about 300ms, during which nothing else on the page
+// moves. But the browser keeps compiled programs for the whole page: a second context asking
+// for the same two shaders gets its program in a few milliseconds. So the pair is compiled
+// once beforehand on a spare context, where KHR_parallel_shader_compile lets that happen off
+// the main thread, and every rim mounts after it. Measured on Iris Xe: 290ms held, down to 10.
+// Without the extension, or if anything here fails, it settles at once and the rims mount as
+// they always did.
+let warmed: Promise<void> | null = null;
+
+export function warmLiquidMetal() {
+  return (warmed ??= new Promise<void>((resolve) => {
+    try {
+      const gl = document
+        .createElement("canvas")
+        .getContext("webgl2", { antialias: false, depth: false, stencil: false });
+      const parallel = gl?.getExtension("KHR_parallel_shader_compile");
+      if (!gl || !parallel) return resolve();
+      // As ShaderMount does where mediump is too coarse (many phones): the sources must be its.
+      let vertex = vertexShaderSource;
+      let fragment = liquidMetalFragmentShader;
+      const precision = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT)?.precision;
+      if (precision && precision < 23) {
+        vertex = vertex.replace(/precision\s+(lowp|mediump)\s+float;/g, "precision highp float;");
+        fragment = fragment
+          .replace(/precision\s+(lowp|mediump)\s+float/g, "precision highp float")
+          .replace(/\b(uniform|varying|attribute)\s+(lowp|mediump)\s+(\w+)/g, "$1 highp $3");
+      }
+      const program = gl.createProgram();
+      for (const [type, source] of [
+        [gl.VERTEX_SHADER, vertex],
+        [gl.FRAGMENT_SHADER, fragment],
+      ] as const) {
+        const shader = gl.createShader(type);
+        if (!shader) return resolve();
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        gl.attachShader(program, shader);
+      }
+      gl.linkProgram(program);
+      const giveUp = performance.now() + 4000;
+      const poll = () => {
+        if (gl.getProgramParameter(program, parallel.COMPLETION_STATUS_KHR) || performance.now() > giveUp) resolve();
+        else window.setTimeout(poll, 16);
+      };
+      poll();
+    } catch {
+      resolve();
+    }
+  }));
+}
 
 // The liquid-metal look from LiquidMetalButton, with every uniform the shader declares set
 // (the button's original list left the colour, image and sizing uniforms out).
@@ -40,30 +96,53 @@ export function useLiquidMetal(speed = LIQUID_METAL_SPEED.rest) {
   const ref = useRef<HTMLDivElement>(null);
   const mount = useRef<ShaderMount | null>(null);
   const still = useRef(false);
+  // The speed last asked for, so a rim that is hovered before its shader is up starts at it.
+  const wanted = useRef(speed);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     still.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    try {
-      mount.current = new ShaderMount(
-        el,
-        liquidMetalFragmentShader,
-        LIQUID_METAL_UNIFORMS,
-        undefined,
-        still.current ? 0 : speed,
-      );
-    } catch {
-      // No WebGL: the static fallback gradient on the element stays.
-      mount.current = null;
-    }
+    wanted.current = speed;
+    // A rim's shader is set up once it is near the screen and the program has been compiled in
+    // the background (see warmLiquidMetal), and then in a quiet moment, so the rims on a page
+    // don't all take their turn in one go while it loads. Until then the fallback gradient shows.
+    let gone = false;
+    let cancelIdle = () => {};
+    const warm = warmLiquidMetal();
+    const cancelNear = whenNear(
+      el,
+      async () => {
+        await warm;
+        if (gone) return;
+        cancelIdle = whenIdle(() => {
+          try {
+            mount.current = new ShaderMount(
+              el,
+              liquidMetalFragmentShader,
+              LIQUID_METAL_UNIFORMS,
+              undefined,
+              still.current ? 0 : wanted.current,
+            );
+          } catch {
+            // No WebGL: the static fallback gradient on the element stays.
+            mount.current = null;
+          }
+        });
+      },
+      "50%",
+    );
     return () => {
+      gone = true;
+      cancelNear();
+      cancelIdle();
       mount.current?.dispose();
       mount.current = null;
     };
   }, [speed]);
 
   const setSpeed = useCallback((next: number) => {
+    wanted.current = next;
     if (!still.current) mount.current?.setSpeed(next);
   }, []);
 

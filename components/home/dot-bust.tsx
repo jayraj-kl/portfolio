@@ -496,9 +496,21 @@ export function DotBust({
         root.position.sub(centre);
         holder.add(root);
         pivot.add(holder);
-        model = holder;
         resize();
-        replay();
+        // Both passes' shaders are compiled before the first frame, in the background where the
+        // browser can: left to that frame, compiling them stalls the page as the bust appears.
+        // A program is built for where it will be drawn, so each is compiled against its target.
+        applyLook(live.current.look);
+        renderer.setRenderTarget(rt);
+        const scenePass = renderer.compileAsync(scene, camera);
+        renderer.setRenderTarget(null);
+        const dotPass = renderer.compileAsync(quadScene, quadCam);
+        const start = () => {
+          if (disposed) return;
+          model = holder;
+          replay();
+        };
+        Promise.all([scenePass, dotPass]).then(start, start);
       },
       undefined,
       (err) => console.error("could not load", src, err),

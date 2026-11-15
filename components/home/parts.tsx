@@ -4,12 +4,13 @@ import { FloatingDock } from "@/components/ui/floating-dock";
 import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import { LiquidMetalBorder } from "@/components/ui/liquid-metal-border";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
-import { links } from "@/lib/constants";
+import { links } from "@/lib/dock-links";
 import { ChevronDown } from "lucide-react";
 import { animate, motion } from "motion/react";
 import dynamic from "next/dynamic";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
+import { useNear } from "@/hooks/use-near";
 import { SPRING_UI, useReducedMotionSafe } from "./motion";
 import { useDark } from "./theme";
 import styles from "./home.module.css";
@@ -47,7 +48,7 @@ export function Logo({ name, src }: { name: string; src: string | null }) {
   return (
     <span className={styles.logo} aria-hidden="true">
       {/* eslint-disable-next-line @next/next/no-img-element -- a plain logo file, filtered to monochrome */}
-      <img src={src} alt="" onError={() => setFailed(true)} />
+      <img src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
     </span>
   );
 }
@@ -253,19 +254,25 @@ const GitHubCalendar = dynamic(
 
 export function Contributions({ username }: { username: string }) {
   const dark = useDark();
+  const box = useRef<HTMLDivElement>(null);
+  // The graph sits near the foot of the page: its script and its data are fetched as the reader
+  // comes within a screen of it, not with the page.
+  const near = useNear(box);
   return (
-    <div className={styles.graph}>
-      <GitHubCalendar
-        username={username}
-        theme={GRAPH_THEME}
-        colorScheme={dark ? "dark" : "light"}
-        blockSize={10}
-        blockMargin={3}
-        blockRadius={2}
-        fontSize={12}
-        errorMessage="The contribution graph could not be loaded from GitHub."
-        labels={{ totalCount: "{{count}} contributions in the last year" }}
-      />
+    <div ref={box} className={styles.graph}>
+      {near ? (
+        <GitHubCalendar
+          username={username}
+          theme={GRAPH_THEME}
+          colorScheme={dark ? "dark" : "light"}
+          blockSize={10}
+          blockMargin={3}
+          blockRadius={2}
+          fontSize={12}
+          errorMessage="The contribution graph could not be loaded from GitHub."
+          labels={{ totalCount: "{{count}} contributions in the last year" }}
+        />
+      ) : null}
     </div>
   );
 }

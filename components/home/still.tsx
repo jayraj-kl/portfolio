@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { INK_DARK, drawLineScreen, figureField, imageField, loadImage, projectField, type Field, type Ink } from "./halftone";
+import { whenNear } from "@/hooks/use-near";
 import { useInk } from "./theme";
 import styles from "./home.module.css";
 
@@ -41,8 +42,13 @@ export function Still({
     let disposed = false;
     let field: Field | null = null;
     let fieldKey = "";
+    // Working out a field and screening it takes a while, and a page has several stills, all
+    // below the first screen. Each is drawn as the reader comes within a screen of it, not
+    // while the page is loading.
+    let near = false;
 
     const draw = () => {
+      if (!near) return;
       const rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -71,7 +77,11 @@ export function Still({
     });
     ro.observe(canvas);
 
-    if (src) {
+    const cancelNear = whenNear(canvas, () => {
+      near = true;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(draw);
+      if (!src) return;
       loadImage(src)
         .then((loaded) => {
           if (disposed) return;
@@ -79,12 +89,13 @@ export function Still({
           draw();
         })
         .catch(() => {});
-    }
+    });
 
     return () => {
       disposed = true;
       redrawRef.current = () => {};
       cancelAnimationFrame(raf);
+      cancelNear();
       ro.disconnect();
     };
   }, [key, src, period]);

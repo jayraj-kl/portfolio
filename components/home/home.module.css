@@ -2241,6 +2241,28 @@ a.arrowCell svg {
   animation: home-dock-shine 1.5s ease-in-out 0.8s 1 both;
 }
 
+/* The hero's reveal, the same focus-pull as Reveal's (reveal.tsx) but run from here: it starts
+   with the first paint, without the script. It fills backwards only, so once it has played the
+   hero is left with no transform or filter of its own. */
+.revealNow {
+  animation:
+    home-reveal-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards,
+    home-reveal-focus 1.1s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes home-reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.985);
+  }
+}
+
+@keyframes home-reveal-focus {
+  from {
+    filter: blur(12px);
+  }
+}
+
 /* Reduced motion: sections rest in place, the dock appears without its shine. */
 @media (prefers-reduced-motion: reduce) {
   .reveal,
@@ -2248,6 +2270,10 @@ a.arrowCell svg {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
+  }
+
+  .revealNow {
+    animation: none;
   }
 
   .dockShine {
