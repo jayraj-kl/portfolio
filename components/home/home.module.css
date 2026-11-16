@@ -2252,6 +2252,15 @@ a.arrowCell svg {
   inset: 0;
   z-index: 69;
   background: var(--glass-thin-fill);
+  /* A swipe on the scrim moves nothing; the page is held while the palette is open. */
+  touch-action: none;
+}
+
+/* Nor does one on the palette's still parts, the search row and the footer. Older iOS scrolls
+   the page behind even with its overflow hidden unless the touch itself is refused. */
+.palInputRow,
+.palFoot {
+  touch-action: none;
 }
 
 /* Where the notch sits, so the palette opens in its place. Centred with flex, as the notch is,

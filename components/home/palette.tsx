@@ -11,7 +11,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { switchTheme } from "@/lib/theme-switch";
-import { useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { writeClipboard } from "./interactive";
 import { goToSection, notchStatus } from "./notch-sections";
 import type { PaletteData, PaletteTarget } from "./palette-items";
@@ -66,6 +66,21 @@ export function Palette({
     if (e.pointerType !== "mouse") e.stopPropagation();
   };
 
+  // The page holds still under the palette, so a swipe scrolls the list and never the page behind
+  // it (as the roles modal does).
+  const lock = useRef<string | null>(null);
+  const unlock = () => {
+    if (lock.current === null) return;
+    document.documentElement.style.overflow = lock.current;
+    lock.current = null;
+  };
+  useEffect(() => {
+    if (!open) return;
+    lock.current = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return unlock;
+  }, [open]);
+
   const close = (restoreFocus: boolean) => {
     setQuery("");
     onClose(restoreFocus);
@@ -75,6 +90,8 @@ export function Palette({
   // work filter is hiding isn't on the page, so the jump goes to its section instead.
   const jump = (id: string, fallback?: string) => {
     close(false);
+    // Freed before the scroll starts, so letting the page go can't cut a smooth scroll short.
+    unlock();
     goToSection(document.getElementById(id) || !fallback ? id : fallback, !reduce);
   };
 
