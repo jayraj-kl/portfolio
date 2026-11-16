@@ -1,5 +1,5 @@
 /* The home page – Halftone White, after Miyoko: one narrow proof column on a hatched plate.
-   White paper, black ink, greys stepped from black, one red registration mark. Dark: the plate inverted.
+   White paper, black ink, greys stepped from black. Dark: the plate inverted.
    The page's colours on <html> (background, scrollbar) are set by PAGE_STYLE in home-page.tsx. */
 
 .root {
@@ -13,7 +13,6 @@
   --rule-strong: #bcbcbc;
   --hatch: #d3d3d3;
   --dot: #e2e2e2;
-  --reg: #e5322d;
   /* Logos keep their own colours and width; this is their height and widest extent. */
   /* Every logo gets the same slot, so the names beside them line up. */
   --logo-h: 2.75rem;
@@ -184,11 +183,6 @@ section.row > .cell {
 
 .cell::after {
   right: -4px;
-}
-
-.regRed::before {
-  background: var(--reg);
-  border-color: var(--reg);
 }
 
 .topBand {

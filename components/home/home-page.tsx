@@ -102,14 +102,12 @@ function Row({
   id,
   cellClass,
   rowClass,
-  red,
   label,
 }: {
   children: ReactNode;
   id?: string;
   cellClass?: string;
   rowClass?: string;
-  red?: boolean;
   label?: string;
 }) {
   const Tag = id ? "section" : "div";
@@ -123,7 +121,7 @@ function Row({
     >
       <div className={styles.gutter} aria-hidden="true" />
       <div
-        className={`${styles.cell} ${red ? styles.regRed : ""} ${cellClass ?? ""}`}
+        className={`${styles.cell} ${cellClass ?? ""}`}
       >
         {children === null ? null : id ? (
           <>
@@ -517,7 +515,7 @@ export function HomePage({ profile }: { profile: Profile }) {
           {null}
         </Row>
 
-        <Row rowClass={styles.heroRow} cellClass={styles.hero} red>
+        <Row rowClass={styles.heroRow} cellClass={styles.hero}>
           <div className={styles.heroHost} data-screen-host>
             {/* Photo, then name, pronunciation and time, then the line about the work. */}
             <HeroBust src={BUST_SRC} label={portraitLabel} />
