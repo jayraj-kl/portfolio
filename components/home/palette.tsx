@@ -11,7 +11,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { switchTheme } from "@/lib/theme-switch";
-import { useState, type KeyboardEvent } from "react";
+import { useState, type KeyboardEvent, type PointerEvent } from "react";
 import { writeClipboard } from "./interactive";
 import { goToSection, notchStatus } from "./notch-sections";
 import type { PaletteData, PaletteTarget } from "./palette-items";
@@ -59,6 +59,12 @@ export function Palette({
   const { resolvedTheme, setTheme } = useTheme();
   const router = useRouter();
   const [query, setQuery] = useState("");
+  // cmdk moves its highlight to whatever row is under the pointer. Under a mouse that is hover;
+  // under a finger it is a scroll dragging the highlight from row to row. So a finger's moves stop
+  // here, before they reach the rows; a tap still chooses its row.
+  const onPointerMoveCapture = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse") e.stopPropagation();
+  };
 
   const close = (restoreFocus: boolean) => {
     setQuery("");
@@ -127,7 +133,13 @@ export function Palette({
             transition={reduce ? { duration: 0 } : SPRING}
           >
             <div className={styles.palette} role="dialog" aria-modal="true" aria-label="Search the page">
-              <Command label="Search the page" loop vimBindings={false} onKeyDown={onKeyDown}>
+              <Command
+                label="Search the page"
+                loop
+                vimBindings={false}
+                onKeyDown={onKeyDown}
+                onPointerMoveCapture={onPointerMoveCapture}
+              >
                 <div className={styles.palInputRow}>
                   <Search size={16} strokeWidth={2} aria-hidden="true" className={styles.palIcon} />
                   <Command.Input
